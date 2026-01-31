@@ -2,19 +2,12 @@
    전역 상태
 ========================= */
 
-let option = {
-  usePlatformer: true,
-  useYesNum: true,
-  ignoreNumber: false,
-  noOneShot: false,
-  mode: "solo" // "solo" | "computer"
-};
-
+let option = null;
 let inGameDB = null;
 let used = new Set();
 let history = [];
 let expectedChar = null;
-let turn = "player"; // computer mode용
+let turn = "player";
 
 /* =========================
    DOM
@@ -25,17 +18,32 @@ const statusEl = document.getElementById("status");
 const historyEl = document.getElementById("history");
 
 /* =========================
-   DB 로딩
+   DB 로딩 (안전 버전)
 ========================= */
 
-async function loadDB() {
-  const db = {
-    classic_yes: await fetch("data/db/classic_yes_num.json").then(r => r.json()),
-    classic_no: await fetch("data/db/classic_no_num.json").then(r => r.json()),
-    platformer_yes: await fetch("data/db/platformer_yes_num.json").then(r => r.json()),
-    platformer_no: await fetch("data/db/platformer_no_num.json").then(r => r.json())
+async function safeFetchJSON(path) {
+  try {
+    const res = await fetch(path, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json || !Array.isArray(json.list)) {
+      throw new Error("Invalid JSON structure");
+    }
+    return json.list;
+  } catch (e) {
+    statusEl.textContent = `DB 로딩 실패: ${path}`;
+    console.error(e);
+    return [];
+  }
+}
+
+async function loadAllDB() {
+  return {
+    classic_yes: await safeFetchJSON("data/db/classic_yes_num.json"),
+    classic_no: await safeFetchJSON("data/db/classic_no_num.json"),
+    platformer_yes: await safeFetchJSON("data/db/platformer_yes_num.json"),
+    platformer_no: await safeFetchJSON("data/db/platformer_no_num.json")
   };
-  return db;
 }
 
 /* =========================
@@ -44,11 +52,12 @@ async function loadDB() {
 
 function buildInGameDB(allDB) {
   const list = [];
-  const byFirst = {};
   const byLower = {};
+  const byFirst = {};
 
-  function pushWords(words) {
+  function addWords(words) {
     for (const w of words) {
+      if (!w || !w.lower) continue;
       list.push(w);
       byLower[w.lower] = w;
       if (!byFirst[w.first]) byFirst[w.first] = [];
@@ -57,19 +66,23 @@ function buildInGameDB(allDB) {
   }
 
   if (option.useYesNum) {
-    pushWords(allDB.classic_yes.list);
-    if (option.usePlatformer) pushWords(allDB.platformer_yes.list);
+    addWords(allDB.classic_yes);
+    if (option.usePlatformer) addWords(allDB.platformer_yes);
   } else {
-    pushWords(allDB.classic_no.list);
-    if (option.usePlatformer) pushWords(allDB.platformer_no.list);
+    addWords(allDB.classic_no);
+    if (option.usePlatformer) addWords(allDB.platformer_no);
   }
 
-  return { list, byFirst, byLower };
+  return { list, byLower, byFirst };
 }
 
 /* =========================
    유틸
 ========================= */
+
+function normalizeInput(str) {
+  return str.trim().toLowerCase();
+}
 
 function getNextChar(word) {
   if (!option.useYesNum) return word.last;
@@ -83,7 +96,6 @@ function isAbsoluteOneShot(word) {
 
 function isOneShot(word) {
   if (isAbsoluteOneShot(word)) return true;
-
   const next = getNextChar(word);
   if (!next) return true;
 
@@ -100,43 +112,38 @@ function isOneShot(word) {
    입력 검증
 ========================= */
 
-const ERROR = {
-  WRONG_START: "WRONG_START",
-  NOT_IN_DB: "NOT_IN_DB",
-  ALREADY_USED: "ALREADY_USED",
-  ONE_SHOT: "ONE_SHOT"
-};
-
 function validateInput(inputLower) {
-  if (inputLower[0] !== expectedChar) return ERROR.WRONG_START;
+  if (!expectedChar || inputLower[0] !== expectedChar) {
+    return `Start는 '${expectedChar}'로 시작해야 합니다.`;
+  }
 
   const word = inGameDB.byLower[inputLower];
-  if (!word) return ERROR.NOT_IN_DB;
+  if (!word) {
+    return "데이터베이스에 없는 단어입니다.";
+  }
 
-  if (used.has(word.original)) return ERROR.ALREADY_USED;
+  if (used.has(word.original)) {
+    return "이미 사용한 단어입니다.";
+  }
 
-  if (option.noOneShot && isOneShot(word)) return ERROR.ONE_SHOT;
+  if (option.noOneShot && isOneShot(word)) {
+    return "현재 상황에서 한방단어입니다.";
+  }
 
   return null;
 }
 
-function getErrorMessage(error) {
-  switch (error) {
-    case ERROR.WRONG_START:
-      return `Start는 '${expectedChar}'로 시작해야 합니다.`;
-    case ERROR.NOT_IN_DB:
-      return "데이터베이스에 없는 단어입니다.";
-    case ERROR.ALREADY_USED:
-      return "이미 사용한 단어입니다.";
-    case ERROR.ONE_SHOT:
-      return "현재 상황에서 한방단어입니다.";
-    default:
-      return "";
-  }
+/* =========================
+   렌더
+========================= */
+
+function render() {
+  historyEl.textContent = history.join(" → ");
+  statusEl.textContent = `Start: '${expectedChar}'`;
 }
 
 /* =========================
-   게임 진행
+   단어 적용
 ========================= */
 
 function applyWord(word) {
@@ -146,11 +153,6 @@ function applyWord(word) {
   render();
 }
 
-function render() {
-  historyEl.textContent = history.join(" → ");
-  statusEl.textContent = `Start: '${expectedChar}'`;
-}
-
 /* =========================
    플레이어 입력
 ========================= */
@@ -158,26 +160,24 @@ function render() {
 function submitInput() {
   if (!expectedChar) return;
 
-  const raw = inputEl.value.trim();
-  if (!raw) return;
+  const raw = inputEl.value;
+  const inputLower = normalizeInput(raw);
+  if (!inputLower) return;
 
-  const lower = raw.toLowerCase();
-  const error = validateInput(lower);
-
+  const error = validateInput(inputLower);
   if (error) {
-    statusEl.textContent = getErrorMessage(error);
+    statusEl.textContent = error;
     if (option.mode === "solo") {
       statusEl.textContent += " 💀 Game Over";
     }
     return;
   }
 
-  const word = inGameDB.byLower[lower];
+  const word = inGameDB.byLower[inputLower];
   applyWord(word);
   inputEl.value = "";
 
   if (option.mode === "computer") {
-    turn = "computer";
     setTimeout(computerTurn, 500);
   }
 }
@@ -188,39 +188,41 @@ function submitInput() {
 
 function computerTurn() {
   const candidates = inGameDB.byFirst[expectedChar] || [];
-  const usable = candidates.filter(
-    w => !used.has(w.original)
-  );
+  const usable = candidates.filter(w => !used.has(w.original));
 
   if (usable.length === 0) {
     statusEl.textContent = "컴퓨터가 낼 단어가 없습니다. 당신의 승리!";
     return;
   }
 
-  let choice = usable;
+  let pool = usable;
   if (option.noOneShot) {
-    choice = usable.filter(w => !isOneShot(w));
-    if (choice.length === 0) choice = usable;
+    const safe = usable.filter(w => !isOneShot(w));
+    if (safe.length > 0) pool = safe;
   }
 
-  const word = choice[Math.floor(Math.random() * choice.length)];
+  const word = pool[Math.floor(Math.random() * pool.length)];
   applyWord(word);
-  turn = "player";
 }
 
 /* =========================
-   초기화
+   게임 시작
 ========================= */
 
 async function startGame(startChar, opt) {
   option = opt;
   used.clear();
   history = [];
-  expectedChar = startChar.toLowerCase();
-  turn = "player";
+  expectedChar = normalizeInput(startChar)[0];
 
-  const allDB = await loadDB();
+  statusEl.textContent = "DB 로딩 중...";
+  const allDB = await loadAllDB();
   inGameDB = buildInGameDB(allDB);
+
+  if (inGameDB.list.length === 0) {
+    statusEl.textContent = "인게임 DB가 비어 있습니다.";
+    return;
+  }
 
   render();
 }
