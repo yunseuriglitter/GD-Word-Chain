@@ -1,29 +1,35 @@
-/* ======================= STATE ======================= */
+/* ===================== DOM ===================== */
 
-let state = "IDLE"; // IDLE | PLAYING | ENDED
-let turn = "PLAYER"; // PLAYER | COMPUTER
+const startBtn = document.getElementById("startBtn");
+const endBtn = document.getElementById("endBtn");
+const wordInput = document.getElementById("wordInput");
+const text1 = document.getElementById("text1");
+const text2 = document.getElementById("text2");
+const dictionaryBox = document.getElementById("dictionaryBox");
+
+const optPlatformer = document.getElementById("optPlatformer");
+const optNumEdge = document.getElementById("optNumEdge");
+const optNumIgnore = document.getElementById("optNumIgnore");
+const optNoOneShot = document.getElementById("optNoOneShot");
+const optAI = document.getElementById("optAI");
+
+/* ===================== STATE ===================== */
+
+let state = "IDLE"; // IDLE | PLAYING
+let turn = "PLAYER";
 
 let gameDB = [];
 let used = new Set();
 let history = [];
 let lastChar = null;
 
-/* ======================= DOM ======================= */
+/* ===================== UTIL ===================== */
 
-const wordInput = document.getElementById("wordInput");
-const text1 = document.getElementById("text1");
-const text2 = document.getElementById("text2");
-const startBtn = document.getElementById("startBtn");
-const endBtn = document.getElementById("endBtn");
-const dictionaryBox = document.getElementById("dictionaryBox");
-
-/* ======================= UTIL ======================= */
-
-function logStatus(msg) {
+function status(msg) {
   text1.textContent = msg;
 }
 
-function logHistory() {
+function updateHistory() {
   text2.textContent = history.join(" → ");
 }
 
@@ -33,11 +39,10 @@ function resetGame() {
   lastChar = null;
   turn = "PLAYER";
   wordInput.value = "";
-  logStatus("");
-  logHistory();
+  updateHistory();
 }
 
-/* ======================= OPTIONS ======================= */
+/* ===================== OPTIONS ===================== */
 
 function getOptions() {
   return {
@@ -45,11 +50,11 @@ function getOptions() {
     numEdge: optNumEdge.checked,
     ignoreTrailing: optNumIgnore.checked,
     noOneShot: optNoOneShot.checked,
-    aiMode: optAI.checked
+    computer: optAI.checked
   };
 }
 
-/* ======================= DB ======================= */
+/* ===================== DB LOAD ===================== */
 
 async function loadGameDB() {
   const opt = getOptions();
@@ -67,128 +72,149 @@ async function loadGameDB() {
   gameDB = lists.flat();
 }
 
-/* ======================= RULE CORE ======================= */
+/* ===================== RULES ===================== */
 
-function getNextChar(entry, opt) {
+function nextChar(entry, opt) {
   if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
     return entry.lastAlpha;
   }
   return entry.last;
 }
 
-function hasAnyContinuation(char, used, opt) {
-  return gameDB.some(w =>
-    !used.has(w.key) && w.first === char
-  );
+function hasContinuation(char, usedSet) {
+  return gameDB.some(e => !usedSet.has(e.key) && e.first === char);
 }
 
-function getPlayableWords(char, used, opt) {
-  return gameDB.filter(w => {
-    if (used.has(w.key)) return false;
-    if (w.first !== char) return false;
+function playableWords(char, usedSet, opt) {
+  return gameDB.filter(e => {
+    if (usedSet.has(e.key)) return false;
+    if (e.first !== char) return false;
 
     if (opt.noOneShot) {
-      const next = getNextChar(w, opt);
-      return hasAnyContinuation(next, used, opt);
+      const nc = nextChar(e, opt);
+      return hasContinuation(nc, usedSet);
     }
     return true;
   });
 }
 
-/* ======================= TURN CHECK ======================= */
-
-function checkLoseAtTurnStart(player) {
+function checkLose(playerName) {
   if (!lastChar) return false;
 
-  const playable = getPlayableWords(lastChar, used, getOptions());
-  if (playable.length === 0) {
-    lose(player, "No possible continuation");
+  const opt = getOptions();
+  const moves = playableWords(lastChar, used, opt);
+  if (moves.length === 0) {
+    status(`❌ ${playerName} loses`);
+    state = "IDLE";
+    wordInput.disabled = true;
     return true;
   }
   return false;
 }
 
-function lose(player, reason) {
-  logStatus(`❌ ${player} loses: ${reason}`);
-  state = "ENDED";
-}
+/* ===================== PLAYER ===================== */
 
-/* ======================= PLAYER ======================= */
-
-function onSubmit() {
+function playerSubmit() {
   if (state !== "PLAYING" || turn !== "PLAYER") return;
 
-  if (checkLoseAtTurnStart("Player")) return;
+  if (checkLose("Player")) return;
 
-  const input = wordInput.value.toLowerCase().trim();
+  const input = wordInput.value.trim().toLowerCase();
   if (!input) return;
 
   const entry = gameDB.find(e => e.key === input);
 
   if (lastChar && (!entry || entry.first !== lastChar)) {
-    return logStatus(`❌ Must start with '${lastChar}'`);
+    status(`❌ Must start with '${lastChar}'`);
+    return;
   }
-  if (!entry) return logStatus("❌ Not in DB");
-  if (used.has(entry.key)) return logStatus("❌ Already used");
+
+  if (!entry) {
+    status("❌ Not in DB");
+    return;
+  }
+
+  if (used.has(entry.key)) {
+    status("❌ Already used");
+    return;
+  }
 
   const opt = getOptions();
-  const next = getNextChar(entry, opt);
+  const nc = nextChar(entry, opt);
 
-  if (opt.noOneShot && !hasAnyContinuation(next, used, opt)) {
-    return logStatus("❌ One-shot word");
+  if (opt.noOneShot && !hasContinuation(nc, used)) {
+    status("❌ One-shot word");
+    return;
   }
 
   used.add(entry.key);
   history.push(entry.original);
-  lastChar = next;
-  logStatus(`⭕ Player: ${entry.original}`);
-  logHistory();
+  lastChar = nc;
   wordInput.value = "";
 
-  if (opt.aiMode) {
+  status(`⭕ Player: ${entry.original}`);
+  updateHistory();
+
+  if (opt.computer) {
     turn = "COMPUTER";
     setTimeout(computerTurn, 300);
   }
 }
 
-/* ======================= COMPUTER ======================= */
+/* ===================== COMPUTER ===================== */
 
 function computerTurn() {
   if (state !== "PLAYING") return;
 
-  if (checkLoseAtTurnStart("Computer")) return;
+  if (checkLose("Computer")) return;
 
   const opt = getOptions();
-  const candidates = getPlayableWords(lastChar, used, opt);
-  const choice = candidates[Math.floor(Math.random() * candidates.length)];
+  const moves = playableWords(lastChar, used, opt);
+  const pick = moves[Math.floor(Math.random() * moves.length)];
 
-  used.add(choice.key);
-  history.push(choice.original);
-  lastChar = getNextChar(choice, opt);
-  logStatus(`⭕ Computer: ${choice.original}`);
-  logHistory();
+  used.add(pick.key);
+  history.push(pick.original);
+  lastChar = nextChar(pick, opt);
+
+  status(`⭕ Computer: ${pick.original}`);
+  updateHistory();
 
   turn = "PLAYER";
 }
 
-/* ======================= CONTROL ======================= */
+/* ===================== EVENTS ===================== */
 
 startBtn.onclick = async () => {
-  resetGame();
-  await loadGameDB();
-  dictionaryBox.classList.add("hidden");
-  state = "PLAYING";
-  startBtn.textContent = "Game Reset";
-  logStatus("Game Started");
+  if (state === "IDLE") {
+    await loadGameDB();
+    resetGame();
+    dictionaryBox.classList.add("hidden");
+    wordInput.disabled = false;
+    state = "PLAYING";
+    startBtn.textContent = "Game Reset";
+    status("Game Started");
+  } else {
+    resetGame();
+    status("Game Reset");
+  }
 };
 
 endBtn.onclick = () => {
   state = "IDLE";
-  dictionaryBox.classList.remove("hidden");
-  startBtn.textContent = "Game Start";
   resetGame();
+  dictionaryBox.classList.remove("hidden");
+  wordInput.disabled = true;
+  startBtn.textContent = "Game Start";
+  status("");
 };
 
 wordInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") onSubmit();
+  if (e.key === "Enter") playerSubmit();
+});
+
+/* ===================== INIT ===================== */
+
+optNumIgnore.disabled = !optNumEdge.checked;
+optNumEdge.addEventListener("change", () => {
+  optNumIgnore.disabled = !optNumEdge.checked;
 });
