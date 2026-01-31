@@ -1,52 +1,39 @@
-[
-  {
-    "original": "3x3",
-    "key": "3x3",
-    "first": "3",
-    "last": "3",
-    "lastAlpha": "x",
-    "startsWithNum": true,
-    "endsWithNum": true,
-    "type": "platformer"
-  },
-  {
-    "original": "Whg3 Lv5",
-    "key": "whg3 lv5",
-    "first": "w",
-    "last": "5",
-    "lastAlpha": "v",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "platformer"
-  },
-  {
-    "original": "22 Trials of PAIN",
-    "key": "22 trials of pain",
-    "first": "2",
-    "last": "n",
-    "lastAlpha": "n",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "platformer"
-  },
-  {
-    "original": "4imu",
-    "key": "4imu",
-    "first": "4",
-    "last": "u",
-    "lastAlpha": "u",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "platformer"
-  },
-  {
-    "original": "FURY OF 500",
-    "key": "fury of 500",
-    "first": "f",
-    "last": "0",
-    "lastAlpha": "f",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "platformer"
-  }
-]
+{
+  "list": [
+    {
+      "original": "3x3",
+      "lower": "3x3",
+      "first": "3",
+      "last": "3",
+      "last_alpha": "x"
+    },
+    {
+      "original": "Whg3 Lv5",
+      "lower": "whg3 lv5",
+      "first": "w",
+      "last": "5",
+      "last_alpha": "v"
+    },
+    {
+      "original": "22 Trials of PAIN",
+      "lower": "22 trials of pain",
+      "first": "2",
+      "last": "n",
+      "last_alpha": "n"
+    },
+    {
+      "original": "4imu",
+      "lower": "4imu",
+      "first": "4",
+      "last": "u",
+      "last_alpha": "u"
+    },
+    {
+      "original": "FURY OF 500",
+      "lower": "fury of 500",
+      "first": "f",
+      "last": "0",
+      "last_alpha": "f"
+    }
+  ]
+}

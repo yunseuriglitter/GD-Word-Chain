@@ -1,412 +1,291 @@
-[
-  {
-    "original": "Destruction 19",
-    "key": "destruction 19",
-    "first": "d",
-    "last": "9",
-    "lastAlpha": "n",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Dry Out Copyable 2",
-    "key": "dry out copyable 2",
-    "first": "d",
-    "last": "2",
-    "lastAlpha": "e",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "LD50",
-    "key": "ld50",
-    "first": "l",
-    "last": "0",
-    "lastAlpha": "d",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "X84",
-    "key": "x84",
-    "first": "x",
-    "last": "4",
-    "lastAlpha": "x",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "X0",
-    "key": "x0",
-    "first": "x",
-    "last": "0",
-    "lastAlpha": "x",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Freedom08",
-    "key": "freedom08",
-    "first": "f",
-    "last": "8",
-    "lastAlpha": "m",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Pingas21",
-    "key": "pingas21",
-    "first": "p",
-    "last": "1",
-    "lastAlpha": "s",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "0 Techno",
-    "key": "0 techno",
-    "first": "0",
-    "last": "o",
-    "lastAlpha": "o",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "Apollo 11",
-    "key": "apollo 11",
-    "first": "a",
-    "last": "1",
-    "lastAlpha": "o",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "2 1 1",
-    "key": "2 1 1",
-    "first": "2",
-    "last": "1",
-    "lastAlpha": null,
-    "startsWithNum": true,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "SECTOR 19",
-    "key": "sector 19",
-    "first": "s",
-    "last": "9",
-    "lastAlpha": "r",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Free For All 2",
-    "key": "free for all 2",
-    "first": "f",
-    "last": "2",
-    "lastAlpha": "l",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Voyager 1",
-    "key": "voyager 1",
-    "first": "v",
-    "last": "1",
-    "lastAlpha": "r",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Ouroboros Startpos 2",
-    "key": "ouroboros startpos 2",
-    "first": "o",
-    "last": "2",
-    "lastAlpha": "s",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "ruber cash 22",
-    "key": "ruber cash 22",
-    "first": "r",
-    "last": "2",
-    "lastAlpha": "h",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Falcon16",
-    "key": "falcon16",
-    "first": "f",
-    "last": "6",
-    "lastAlpha": "n",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Freedom19",
-    "key": "freedom19",
-    "first": "f",
-    "last": "9",
-    "lastAlpha": "m",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "OPSM1",
-    "key": "opsm1",
-    "first": "o",
-    "last": "1",
-    "lastAlpha": "m",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "100HEX",
-    "key": "100hex",
-    "first": "1",
-    "last": "x",
-    "lastAlpha": "x",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "N0",
-    "key": "n0",
-    "first": "n",
-    "last": "0",
-    "lastAlpha": "n",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "love0",
-    "key": "love0",
-    "first": "l",
-    "last": "0",
-    "lastAlpha": "e",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "U235",
-    "key": "u235",
-    "first": "u",
-    "last": "5",
-    "lastAlpha": "u",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Fingerdash v3",
-    "key": "fingerdash v3",
-    "first": "f",
-    "last": "3",
-    "lastAlpha": "v",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Wacky McWhackface v2",
-    "key": "wacky mcwhackface v2",
-    "first": "w",
-    "last": "2",
-    "lastAlpha": "v",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "1330X",
-    "key": "1330x",
-    "first": "1",
-    "last": "x",
-    "lastAlpha": "x",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "4ucked Up",
-    "key": "4ucked up",
-    "first": "4",
-    "last": "p",
-    "lastAlpha": "p",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "4Elements",
-    "key": "4elements",
-    "first": "4",
-    "last": "s",
-    "lastAlpha": "s",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "Semicolon 3",
-    "key": "semicolon 3",
-    "first": "s",
-    "last": "3",
-    "lastAlpha": "n",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Gaming 35",
-    "key": "gaming 35",
-    "first": "g",
-    "last": "5",
-    "lastAlpha": "g",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "On1y Cub3",
-    "key": "on1y cub3",
-    "first": "o",
-    "last": "3",
-    "lastAlpha": "b",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "3ABNCNMOCT6",
-    "key": "3abncnmoct6",
-    "first": "3",
-    "last": "6",
-    "lastAlpha": "t",
-    "startsWithNum": true,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "0 mind",
-    "key": "0 mind",
-    "first": "0",
-    "last": "d",
-    "lastAlpha": "d",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "CICADA3302",
-    "key": "cicada3302",
-    "first": "c",
-    "last": "2",
-    "lastAlpha": "a",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "IDOL19",
-    "key": "idol19",
-    "first": "i",
-    "last": "9",
-    "lastAlpha": "l",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Cosmorush 21",
-    "key": "cosmorush 21",
-    "first": "c",
-    "last": "1",
-    "lastAlpha": "h",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "8o X",
-    "key": "8o x",
-    "first": "8",
-    "last": "x",
-    "lastAlpha": "x",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "story 2",
-    "key": "story 2",
-    "first": "s",
-    "last": "2",
-    "lastAlpha": "y",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "Destination 19",
-    "key": "destination 19",
-    "first": "d",
-    "last": "9",
-    "lastAlpha": "n",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "9blue",
-    "key": "9blue",
-    "first": "9",
-    "last": "e",
-    "lastAlpha": "e",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  },
-  {
-    "original": "Freedom16",
-    "key": "freedom16",
-    "first": "f",
-    "last": "6",
-    "lastAlpha": "m",
-    "startsWithNum": false,
-    "endsWithNum": true,
-    "type": "classic"
-  },
-  {
-    "original": "4 Matilda",
-    "key": "4 matilda",
-    "first": "4",
-    "last": "a",
-    "lastAlpha": "a",
-    "startsWithNum": true,
-    "endsWithNum": false,
-    "type": "classic"
-  }
-]
+{
+  "list": [
+    {
+      "original": "Destruction 19",
+      "lower": "destruction 19",
+      "first": "d",
+      "last": "9",
+      "last_alpha": "n"
+    },
+    {
+      "original": "Dry Out Copyable 2",
+      "lower": "dry out copyable 2",
+      "first": "d",
+      "last": "2",
+      "last_alpha": "e"
+    },
+    {
+      "original": "LD50",
+      "lower": "ld50",
+      "first": "l",
+      "last": "0",
+      "last_alpha": "d"
+    },
+    {
+      "original": "X84",
+      "lower": "x84",
+      "first": "x",
+      "last": "4",
+      "last_alpha": "x"
+    },
+    {
+      "original": "X0",
+      "lower": "x0",
+      "first": "x",
+      "last": "0",
+      "last_alpha": "x"
+    },
+    {
+      "original": "Freedom08",
+      "lower": "freedom08",
+      "first": "f",
+      "last": "8",
+      "last_alpha": "m"
+    },
+    {
+      "original": "Pingas21",
+      "lower": "pingas21",
+      "first": "p",
+      "last": "1",
+      "last_alpha": "s"
+    },
+    {
+      "original": "0 Techno",
+      "lower": "0 techno",
+      "first": "0",
+      "last": "o",
+      "last_alpha": "o"
+    },
+    {
+      "original": "Apollo 11",
+      "lower": "apollo 11",
+      "first": "a",
+      "last": "1",
+      "last_alpha": "o"
+    },
+    {
+      "original": "2 1 1",
+      "lower": "2 1 1",
+      "first": "2",
+      "last": "1",
+      "last_alpha": null
+    },
+    {
+      "original": "SECTOR 19",
+      "lower": "sector 19",
+      "first": "s",
+      "last": "9",
+      "last_alpha": "r"
+    },
+    {
+      "original": "Free For All 2",
+      "lower": "free for all 2",
+      "first": "f",
+      "last": "2",
+      "last_alpha": "l"
+    },
+    {
+      "original": "Voyager 1",
+      "lower": "voyager 1",
+      "first": "v",
+      "last": "1",
+      "last_alpha": "r"
+    },
+    {
+      "original": "Ouroboros Startpos 2",
+      "lower": "ouroboros startpos 2",
+      "first": "o",
+      "last": "2",
+      "last_alpha": "s"
+    },
+    {
+      "original": "ruber cash 22",
+      "lower": "ruber cash 22",
+      "first": "r",
+      "last": "2",
+      "last_alpha": "h"
+    },
+    {
+      "original": "Falcon16",
+      "lower": "falcon16",
+      "first": "f",
+      "last": "6",
+      "last_alpha": "n"
+    },
+    {
+      "original": "Freedom19",
+      "lower": "freedom19",
+      "first": "f",
+      "last": "9",
+      "last_alpha": "m"
+    },
+    {
+      "original": "OPSM1",
+      "lower": "opsm1",
+      "first": "o",
+      "last": "1",
+      "last_alpha": "m"
+    },
+    {
+      "original": "100HEX",
+      "lower": "100hex",
+      "first": "1",
+      "last": "x",
+      "last_alpha": "x"
+    },
+    {
+      "original": "N0",
+      "lower": "n0",
+      "first": "n",
+      "last": "0",
+      "last_alpha": "n"
+    },
+    {
+      "original": "love0",
+      "lower": "love0",
+      "first": "l",
+      "last": "0",
+      "last_alpha": "e"
+    },
+    {
+      "original": "U235",
+      "lower": "u235",
+      "first": "u",
+      "last": "5",
+      "last_alpha": "u"
+    },
+    {
+      "original": "Fingerdash v3",
+      "lower": "fingerdash v3",
+      "first": "f",
+      "last": "3",
+      "last_alpha": "v"
+    },
+    {
+      "original": "Wacky McWhackface v2",
+      "lower": "wacky mcwhackface v2",
+      "first": "w",
+      "last": "2",
+      "last_alpha": "v"
+    },
+    {
+      "original": "1330X",
+      "lower": "1330x",
+      "first": "1",
+      "last": "x",
+      "last_alpha": "x"
+    },
+    {
+      "original": "4ucked Up",
+      "lower": "4ucked up",
+      "first": "4",
+      "last": "p",
+      "last_alpha": "p"
+    },
+    {
+      "original": "4Elements",
+      "lower": "4elements",
+      "first": "4",
+      "last": "s",
+      "last_alpha": "s"
+    },
+    {
+      "original": "Semicolon 3",
+      "lower": "semicolon 3",
+      "first": "s",
+      "last": "3",
+      "last_alpha": "n"
+    },
+    {
+      "original": "Gaming 35",
+      "lower": "gaming 35",
+      "first": "g",
+      "last": "5",
+      "last_alpha": "g"
+    },
+    {
+      "original": "On1y Cub3",
+      "lower": "on1y cub3",
+      "first": "o",
+      "last": "3",
+      "last_alpha": "b"
+    },
+    {
+      "original": "3ABNCNMOCT6",
+      "lower": "3abncnmoct6",
+      "first": "3",
+      "last": "6",
+      "last_alpha": "t"
+    },
+    {
+      "original": "0 mind",
+      "lower": "0 mind",
+      "first": "0",
+      "last": "d",
+      "last_alpha": "d"
+    },
+    {
+      "original": "CICADA3302",
+      "lower": "cicada3302",
+      "first": "c",
+      "last": "2",
+      "last_alpha": "a"
+    },
+    {
+      "original": "IDOL19",
+      "lower": "idol19",
+      "first": "i",
+      "last": "9",
+      "last_alpha": "l"
+    },
+    {
+      "original": "Cosmorush 21",
+      "lower": "cosmorush 21",
+      "first": "c",
+      "last": "1",
+      "last_alpha": "h"
+    },
+    {
+      "original": "8o X",
+      "lower": "8o x",
+      "first": "8",
+      "last": "x",
+      "last_alpha": "x"
+    },
+    {
+      "original": "story 2",
+      "lower": "story 2",
+      "first": "s",
+      "last": "2",
+      "last_alpha": "y"
+    },
+    {
+      "original": "Destination 19",
+      "lower": "destination 19",
+      "first": "d",
+      "last": "9",
+      "last_alpha": "n"
+    },
+    {
+      "original": "9blue",
+      "lower": "9blue",
+      "first": "9",
+      "last": "e",
+      "last_alpha": "e"
+    },
+    {
+      "original": "Freedom16",
+      "lower": "freedom16",
+      "first": "f",
+      "last": "6",
+      "last_alpha": "m"
+    },
+    {
+      "original": "4 Matilda",
+      "lower": "4 matilda",
+      "first": "4",
+      "last": "a",
+      "last_alpha": "a"
+    }
+  ]
+}
