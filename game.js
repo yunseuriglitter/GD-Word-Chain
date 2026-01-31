@@ -209,14 +209,23 @@ function onSubmit() {
 
   const entry = gameDB.find(e => e.key === input);
 
-  // 시작 글자 우선 검사
-  if (lastChar && (!entry || entry.first !== lastChar)) {
+  // 1️⃣ 입력 문자열 기준 시작 글자 검사
+  if (lastChar && input[0] !== lastChar) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
 
-  if (!entry) return logStatus("❌ Not in DB");
-  if (used.has(entry.key)) return logStatus("❌ Already used");
+  // 2️⃣ DB 존재 여부 검사
+  const entry = gameDB.find(e => e.key === input);
+  if (!entry) {
+    return logStatus("❌ Not in DB");
+  }
 
+  // 3️⃣ 중복 사용 검사
+  if (used.has(entry.key)) {
+    return logStatus("❌ Already used");
+  }
+
+  // 4️⃣ 이후 로직
   const opt = getOptions();
   const nextChar = getNextChar(entry, opt);
 
