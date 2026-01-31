@@ -11,7 +11,8 @@
     }
 
     fieldset {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      padding: 10px;
     }
 
     input[type="text"] {
@@ -20,7 +21,7 @@
     }
 
     button {
-      margin-right: 5px;
+      margin-right: 6px;
     }
 
     .box {
@@ -33,17 +34,18 @@
       font-size: 14px;
     }
 
+    .disabled {
+      opacity: 0.5;
+    }
+
+    /* 게임 중 사전 숨김용 */
+    .hidden {
+      display: none;
+    }
+
     #text1 {
       font-weight: bold;
       min-height: 1.5em;
-    }
-
-    #text2 {
-      margin-top: 5px;
-    }
-
-    .disabled {
-      opacity: 0.5;
     }
   </style>
 </head>
@@ -53,7 +55,7 @@
 
 <!-- ================= OPTIONS ================= -->
 <fieldset id="options">
-  <legend>Options</legend>
+  <legend>Game Options</legend>
 
   <label>
     <input type="checkbox" id="optPlatformer" checked>
@@ -81,15 +83,29 @@
   </label>
 </fieldset>
 
-<!-- ================= DICTIONARY 1 ================= -->
-<h3>Dictionary (Prefix Search)</h3>
-<input type="text" id="dictInput" placeholder="Type prefix...">
-<div id="dictResult" class="box"></div>
+<!-- ================= DICTIONARY ================= -->
+<fieldset id="dictionaryBox">
+  <legend>Dictionary (Pre-Game Only)</legend>
 
-<!-- ================= DICTIONARY 2 ================= -->
-<h3>One-Shot Words (Yes-Num Only)</h3>
-<button id="oneshotBtn">Generate One-Shot List</button>
-<div id="oneshotResult" class="box"></div>
+  <label>
+    <input type="radio" name="dictMode" id="dictPrefix" checked>
+    Prefix Search
+  </label>
+  <label>
+    <input type="radio" name="dictMode" id="dictSuffix">
+    Suffix Search
+  </label>
+
+  <br><br>
+
+  <input type="text" id="dictInput" placeholder="Type to search...">
+  <div id="dictResult" class="box"></div>
+
+  <br>
+
+  <button id="oneshotBtn">Generate One-Shot List</button>
+  <div id="oneshotResult" class="box"></div>
+</fieldset>
 
 <hr>
 
