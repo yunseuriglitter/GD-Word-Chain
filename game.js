@@ -10,7 +10,6 @@ let allDB = [];
 let used = new Set();
 let history = [];
 let lastChar = null;
-let lastPlayer = null; // 🔥 마지막에 입력한 주체
 
 /* =========================================================
    DOM
@@ -48,7 +47,7 @@ const oneshotResult = document.getElementById("oneshotResult");
 ========================================================= */
 
 function logStatus(msg) {
-  text1.textContent = msg;
+  text1.textContent = msg; // 항상 한 줄
 }
 
 function logHistory() {
@@ -69,7 +68,6 @@ function resetGame() {
   used.clear();
   history = [];
   lastChar = null;
-  lastPlayer = null;
   turn = "PLAYER";
   text1.textContent = "";
   text2.textContent = "";
@@ -105,6 +103,7 @@ syncOptions();
    DB LOADERS
 ========================================================= */
 
+// 전체 사전 (옵션 무시)
 async function loadAllDB() {
   if (allDB.length) return;
 
@@ -115,10 +114,14 @@ async function loadAllDB() {
     "data/db/platformer_yes_num.json"
   ];
 
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+  const lists = await Promise.all(
+    files.map(f => fetch(f).then(r => r.json()))
+  );
+
   allDB = lists.flat();
 }
 
+// 게임용 DB (옵션 반영)
 async function loadGameDB() {
   const opt = getOptions();
   const files = [];
@@ -131,16 +134,26 @@ async function loadGameDB() {
     if (opt.numEdge) files.push("data/db/platformer_yes_num.json");
   }
 
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+  const lists = await Promise.all(
+    files.map(f => fetch(f).then(r => r.json()))
+  );
+
   gameDB = lists.flat();
 }
 
+// one-shot 전용 DB (yes_num only)
 async function loadOneShotDB() {
   const opt = getOptions();
   const files = ["data/db/classic_yes_num.json"];
-  if (opt.platformer) files.push("data/db/platformer_yes_num.json");
 
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+  if (opt.platformer) {
+    files.push("data/db/platformer_yes_num.json");
+  }
+
+  const lists = await Promise.all(
+    files.map(f => fetch(f).then(r => r.json()))
+  );
+
   return lists.flat();
 }
 
@@ -148,22 +161,18 @@ async function loadOneShotDB() {
    CORE RULE FUNCTIONS
 ========================================================= */
 
-function getNextChar(entry) {
-  const opt = getOptions();
+function getNextChar(entry, opt) {
   if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
     return entry.lastAlpha;
   }
   return entry.last;
 }
 
-function getCandidates(char) {
-  return gameDB.filter(e => !used.has(e.key) && e.first === char);
-}
-
-function isOneShot(entry) {
-  const next = getNextChar(entry);
-  if (!next) return true;
-  return getCandidates(next).length === 0;
+function hasNextWord(char) {
+  return gameDB.some(e =>
+    !used.has(e.key) &&
+    e.first === char
+  );
 }
 
 /* =========================================================
@@ -173,21 +182,15 @@ function isOneShot(entry) {
 function accept(entry, who) {
   used.add(entry.key);
   history.push(entry.original);
-  lastChar = getNextChar(entry);
-  lastPlayer = who;
+  lastChar = getNextChar(entry, getOptions());
 
   logStatus(`⭕ ${who}: ${entry.original}`);
   logHistory();
   wordInput.value = "";
-
-  // 🔥 한방 허용 룰에서 즉시 승패 판정
-  if (!getOptions().noOneShot && getCandidates(lastChar).length === 0) {
-    endGame(`${who} wins (one-shot)`);
-  }
 }
 
-function endGame(msg) {
-  logStatus(msg);
+function lose(who, reason) {
+  logStatus(`❌ ${who} loses: ${reason}`);
   state = "ENDED";
 }
 
@@ -196,13 +199,9 @@ function endGame(msg) {
 function onSubmit() {
   if (state !== "PLAYING" || turn !== "PLAYER") return;
 
-  // 🔥 AI가 한방 쳤을 경우에만 패배
-  if (
-    lastChar &&
-    lastPlayer === "AI" &&
-    getCandidates(lastChar).length === 0
-  ) {
-    return endGame("Computer wins (one-shot)");
+  // AI가 한방 쳤을 경우
+  if (lastChar && !hasNextWord(lastChar)) {
+    return lose("Player", "No possible continuation");
   }
 
   const input = wordInput.value.toLowerCase().trim();
@@ -210,19 +209,25 @@ function onSubmit() {
 
   const entry = gameDB.find(e => e.key === input);
 
+  // 시작 글자 우선 검사
   if (lastChar && (!entry || entry.first !== lastChar)) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
+
   if (!entry) return logStatus("❌ Not in DB");
   if (used.has(entry.key)) return logStatus("❌ Already used");
 
-  if (getOptions().noOneShot && isOneShot(entry)) {
-    return logStatus("❌ One-shot word is disallowed");
+  const opt = getOptions();
+  const nextChar = getNextChar(entry, opt);
+
+  // 한방 불가 룰
+  if (opt.noOneShot && (!nextChar || !hasNextWord(nextChar))) {
+    return lose("Player", "One-shot word");
   }
 
-  accept(entry, "PLAYER");
+  accept(entry, "Player");
 
-  if (getOptions().aiMode && state === "PLAYING") {
+  if (opt.aiMode) {
     turn = "AI";
     setTimeout(aiTurn, 300);
   }
@@ -233,23 +238,22 @@ function onSubmit() {
 function aiTurn() {
   if (state !== "PLAYING") return;
 
-  if (
-    lastChar &&
-    lastPlayer === "PLAYER" &&
-    getCandidates(lastChar).length === 0
-  ) {
-    return endGame("Player wins (one-shot)");
+  // 플레이어가 한방 쳤을 경우
+  if (lastChar && !hasNextWord(lastChar)) {
+    return lose("AI", "No possible continuation");
   }
 
-  let candidates = getCandidates(lastChar);
+  const opt = getOptions();
 
-  if (getOptions().noOneShot) {
-    const safe = candidates.filter(e => !isOneShot(e));
-    if (safe.length === 0) return endGame("Player wins");
-    candidates = safe;
+  const candidates = gameDB.filter(e =>
+    !used.has(e.key) &&
+    e.first === lastChar &&
+    (!opt.noOneShot || hasNextWord(getNextChar(e, opt)))
+  );
+
+  if (candidates.length === 0) {
+    return lose("AI", "No possible continuation");
   }
-
-  if (candidates.length === 0) return endGame("Player wins");
 
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
   accept(choice, "AI");
@@ -263,7 +267,10 @@ function aiTurn() {
 startBtn.onclick = async () => {
   resetGame();
   await loadGameDB();
+
+  // 🔥 게임 시작 시 사전 영역 숨김
   dictionaryBox.classList.add("hidden");
+
   lockOptions(true);
   state = "PLAYING";
   logStatus("Game Started");
@@ -273,7 +280,10 @@ endBtn.onclick = () => {
   state = "IDLE";
   lockOptions(false);
   resetGame();
+
+  // 🔥 게임 종료 시 사전 영역 복구
   dictionaryBox.classList.remove("hidden");
+
   logStatus("Game Ended");
 };
 
@@ -282,31 +292,38 @@ wordInput.addEventListener("keydown", e => {
 });
 
 /* =========================================================
-   DICTIONARY (PREFIX / SUFFIX)
+   DICTIONARY (PREFIX / SUFFIX, ALL DB)
 ========================================================= */
 
 dictInput.addEventListener("input", async () => {
-  if (state !== "IDLE") return;
-  await loadAllDB();
+  if (state !== "IDLE") return; // 게임 중 접근 차단
 
+  await loadAllDB();
   const q = dictInput.value.toLowerCase().trim();
-  if (!q) return (dictResult.textContent = "");
+
+  if (!q) {
+    dictResult.textContent = "";
+    return;
+  }
 
   const matches = allDB
     .filter(e =>
-      dictPrefix.checked ? e.key.startsWith(q) : e.key.endsWith(q)
+      dictPrefix.checked
+        ? e.key.startsWith(q)
+        : e.key.endsWith(q)
     )
     .map(e => e.original);
 
-  dictResult.textContent = matches.length ? matches.join("\n") : "(no matches)";
+  dictResult.textContent =
+    matches.length ? matches.join("\n") : "(no matches)";
 });
 
 /* =========================================================
-   ONE-SHOT DICTIONARY
+   ONE-SHOT DICTIONARY (YES_NUM ONLY)
 ========================================================= */
 
 oneshotBtn.onclick = async () => {
-  if (state !== "IDLE") return;
+  if (state !== "IDLE") return; // 게임 중 접근 차단
 
   oneshotResult.textContent = "Analyzing...";
   const list = await loadOneShotDB();
@@ -314,11 +331,21 @@ oneshotBtn.onclick = async () => {
 
   const oneshots = list.filter(e => {
     const next = e.last;
+
+    // 숫자 → yes_num 안에서만
     if (/[0-9]/.test(next)) {
-      return !list.some(x => x.key !== e.key && x.first === next);
+      return !list.some(x =>
+        x.key !== e.key &&
+        x.first === next
+      );
     }
-    return !allDB.some(x => x.first === next);
+
+    // 알파벳 → 전체 DB에서
+    return !allDB.some(x =>
+      x.first === next
+    );
   }).map(e => e.original);
 
-  oneshotResult.textContent = oneshots.length ? oneshots.join("\n") : "(none)";
+  oneshotResult.textContent =
+    oneshots.length ? oneshots.join("\n") : "(none)";
 };
