@@ -1,231 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GD Word Chain</title>
+  <meta charset="UTF-8" />
+  <title>GD Word Chain</title>
 
-<style>
-/* ===== Base ===== */
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  padding: 20px;
-}
+  <link rel="stylesheet" href="style.css" />
 
-h1 {
-  margin-bottom: 20px;
-}
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #111;
+      color: #eee;
+    }
 
-/* ===== Layout ===== */
-.container {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
+    .container {
+      display: flex;
+      gap: 20px;
+    }
 
-fieldset {
-  border: 2px solid #333;
-  padding: 14px;
-  background: #fff;
-  margin-bottom: 14px;
-}
+    .panel {
+      border: 1px solid #444;
+      padding: 12px;
+      border-radius: 6px;
+    }
 
-legend {
-  font-weight: bold;
-  padding: 0 6px;
-}
+    .panel-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
 
-/* ===== Disabled ===== */
-.disabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
+    .disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
 
-/* ===== Left Panel ===== */
-#leftPanel {
-  width: 300px;
-}
+    .left {
+      width: 35%;
+    }
 
-/* ===== Options ===== */
-.option {
-  display: block;
-  margin-bottom: 8px;
-}
+    .right {
+      width: 65%;
+    }
 
-/* ===== Game Control ===== */
-#gameControl {
-  display: flex;
-  gap: 8px;
-}
+    .row {
+      margin-bottom: 6px;
+    }
 
-/* ===== Dictionary / One-Shot ===== */
-.tabRow {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-}
+    .game-control {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
 
-#dictSearch {
-  width: 100%;
-  padding: 5px;
-  margin-bottom: 8px;
-}
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-.listBox {
-  border: 1px solid #999;
-  background: #fafafa;
-  min-height: 120px;
-  max-height: 180px;
-  overflow-y: auto;
-  padding: 6px;
-  white-space: pre-wrap;
-}
+    textarea, pre {
+      width: 100%;
+      height: 140px;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #333;
+      padding: 6px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
 
-/* ===== Ingame ===== */
-#ingameArea {
-  flex: 1;
-}
+    .inline {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-.inputRow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+    .radio-group {
+      display: flex;
+      gap: 10px;
+    }
 
-#wordInput {
-  width: 70%;
-  font-size: 16px;
-  padding: 6px;
-}
-
-#btnHint {
-  width: 30%;
-}
-
-.box {
-  border: 1px solid #999;
-  background: #fafafa;
-  min-height: 40px;
-  padding: 8px;
-  margin-bottom: 12px;
-  white-space: pre-wrap;
-}
-</style>
+    button {
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>GD Word Chain</h1>
+  <h1>GD Word Chain</h1>
 
-<div class="container">
+  <div class="container">
 
-<!-- ================= LEFT PANEL ================= -->
-<div id="leftPanel">
+    <!-- =========================
+         LEFT : PRE-GAME
+    ========================== -->
+    <div class="left">
 
-  <!-- ===== Options ===== -->
-  <fieldset id="optionsArea">
-    <legend>Options</legend>
+      <!-- OPTIONS -->
+      <div id="optionsArea" class="panel">
+        <div class="panel-title">Options</div>
 
-    <label class="option">
-      <input type="checkbox" id="optPlatformer" checked>
-      Platformer
-    </label>
+        <div class="row">
+          <label><input type="checkbox" id="optPlatformer" checked /> Platformer</label>
+        </div>
 
-    <label class="option">
-      <input type="checkbox" id="optStartEndNum" checked>
-      Start / End Num
-    </label>
+        <div class="row">
+          <label><input type="checkbox" id="optStartEndNum" checked /> Start / End Num</label>
+        </div>
 
-    <label class="option" id="optIgnoreWrapper">
-      <input type="checkbox" id="optIgnoreTrailingNum">
-      Ignore Trailing Num
-    </label>
+        <div class="row" id="optIgnoreWrapper">
+          <label><input type="checkbox" id="optIgnoreTrailingNum" /> Ignore Trailing Num</label>
+        </div>
 
-    <label class="option">
-      <input type="checkbox" id="optAllowOneShot">
-      Allow One-Shot Word
-    </label>
+        <div class="row">
+          <label><input type="checkbox" id="optAllowOneShot" /> Allow One-Shot Word</label>
+        </div>
 
-    <label class="option">
-      <input type="checkbox" id="optComputerMode" checked>
-      Computer Mode
-    </label>
-  </fieldset>
+        <div class="row">
+          <label><input type="checkbox" id="optComputerMode" checked /> Computer Mode</label>
+        </div>
+      </div>
 
-  <!-- ===== Game Control ===== -->
-  <fieldset id="gameControlArea">
-    <legend>Game Control</legend>
-    <div id="gameControl">
-      <button id="btnStart">Start Game</button>
-      <button id="btnFinish">Finish Game</button>
+      <!-- GAME CONTROL -->
+      <div class="panel">
+        <div class="panel-title">Game Control</div>
+
+        <div class="game-control">
+          <button id="btnStart">Start Game</button>
+          <button id="btnFinish">Finish Game</button>
+        </div>
+      </div>
+
+      <!-- DICTIONARY -->
+      <div id="dictionaryArea" class="panel">
+        <div class="panel-title">Dictionary</div>
+
+        <div class="radio-group">
+          <label><input type="radio" name="dictMode" id="dictPrefix" checked /> Prefix</label>
+          <label><input type="radio" name="dictMode" id="dictSuffix" /> Suffix</label>
+        </div>
+
+        <div class="row">
+          <input type="text" id="dictSearch" placeholder="Search..." />
+        </div>
+
+        <pre id="dictResult"></pre>
+      </div>
+
+      <!-- ONE SHOT -->
+      <div id="oneShotArea" class="panel">
+        <div class="panel-title">One-Shot Word</div>
+
+        <button id="btnFindOneShot">Find</button>
+
+        <pre id="oneShotResult"></pre>
+      </div>
+
     </div>
-  </fieldset>
 
-  <!-- ===== Dictionary ===== -->
-  <fieldset id="dictionaryArea">
-    <legend>Dictionary</legend>
+    <!-- =========================
+         RIGHT : IN-GAME
+    ========================== -->
+    <div class="right">
 
-    <div class="tabRow">
-      <label>
-        <input type="radio" name="dictMode" id="dictPrefix" value="prefix" checked>
-        Prefix
-      </label>
+      <div id="ingameArea" class="panel disabled">
+        <div class="panel-title">In-Game</div>
 
-      <label>
-        <input type="radio" name="dictMode" id="dictSuffix" value="suffix">
-        Suffix
-      </label>
+        <div class="inline">
+          <input type="text" id="gameInput" placeholder="Enter word..." />
+          <button id="btnHint">Hint</button>
+        </div>
+
+        <div class="row">
+          <strong>Status</strong>
+          <pre id="statusArea"></pre>
+        </div>
+
+        <div class="row">
+          <strong>History</strong>
+          <pre id="historyArea"></pre>
+        </div>
+      </div>
+
     </div>
 
-    <input
-      type="text"
-      id="dictSearch"
-      placeholder="Search..."
-    >
-
-    <div id="dictResult" class="listBox"></div>
-  </fieldset>
-
-  <!-- ===== One-Shot Word ===== -->
-  <fieldset id="oneShotArea">
-    <legend>One-Shot Word</legend>
-    <button id="btnFindOneShot">Find</button>
-    <div id="oneShotResult" class="listBox"></div>
-  </fieldset>
-
-</div>
-
-<!-- ================= RIGHT PANEL ================= -->
-<fieldset id="ingameArea" class="disabled">
-  <legend>Ingame</legend>
-
-  <div class="inputRow">
-    <input
-      type="text"
-      id="wordInput"
-      placeholder="Enter word"
-      disabled
-    >
-    <button id="btnHint" disabled>Hint</button>
   </div>
 
-  <strong>Status</strong>
-  <div id="statusText" class="box"></div>
+  <!-- =========================
+       SCRIPTS (ORDER IS CRITICAL)
+  ========================== -->
 
-  <strong>History</strong>
-  <div id="historyText" class="box"></div>
-</fieldset>
+  <!-- DB -->
+  <script src="data/db/classic_no_num.js"></script>
+  <script src="data/db/classic_yes_num.js"></script>
+  <script src="data/db/platformer_no_num.js"></script>
+  <script src="data/db/platformer_yes_num.js"></script>
 
-</div>
-
-<!-- ================= DATABASE (전역 로딩) ================= -->
-<script src="data/db/classic_no_num.js"></script>
-<script src="data/db/classic_yes_num.js"></script>
-<script src="data/db/platformer_no_num.js"></script>
-<script src="data/db/platformer_yes_num.js"></script>
-
-<!-- ================= ENTRY POINT ================= -->
-<script type="module" src="main.js"></script>
+  <!-- MAIN ENTRY -->
+  <script type="module" src="main.js"></script>
 
 </body>
 </html>
