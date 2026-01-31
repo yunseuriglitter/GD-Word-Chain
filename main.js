@@ -1,33 +1,96 @@
-import { initPreGame, disablePreGameUI } from "./pregame.js";
-import { startInGame, finishInGame } from "./ingame.js";
+import {
+  initPreGame,
+  enterPreGameUI,
+  disablePreGameUI
+} from "./pregame.js";
 
-let state = "PRE";
+import {
+  startInGame,
+  resetInGame,
+  finishInGame
+} from "./ingame.js";
 
-initPreGame((options) => {
-  state = "IN";
+/* =========================
+   Game State
+========================= */
 
-  // 버튼 텍스트 변경
-  document.getElementById("btnStart").textContent = "Reset Game";
+const STATE = {
+  PRE: "PRE",
+  IN: "IN"
+};
 
-  // Pre-game UI 비활성
+let currentState = STATE.PRE;
+
+/* =========================
+   DOM
+========================= */
+
+const btnStart  = document.getElementById("btnStart");
+const btnFinish = document.getElementById("btnFinish");
+
+/* =========================
+   Initial Load
+========================= */
+
+// 🔥 사이트 로딩 시 무조건 pregame 시작
+enterPreGame();
+
+/* =========================
+   State Handlers
+========================= */
+
+function enterPreGame() {
+  currentState = STATE.PRE;
+
+  // UI
+  btnStart.textContent = "Start Game";
+  btnFinish.disabled = true;
+  btnFinish.style.opacity = "0.3";
+
+  // pregame UI 활성
+  enterPreGameUI();
+
+  // pregame 로직 시작
+  initPreGame(handleStartGame);
+}
+
+function enterInGame(options) {
+  currentState = STATE.IN;
+
+  // UI
+  btnStart.textContent = "Reset Game";
+  btnFinish.disabled = false;
+  btnFinish.style.opacity = "1";
+
+  // pregame UI 비활성
   disablePreGameUI();
 
-  // In-game 시작
+  // ingame 시작
   startInGame(options);
-});
+}
+
+/* =========================
+   Button Logic
+========================= */
+
+// Start / Reset 버튼은 pregame에서 onStart 콜백으로만 처리
+function handleStartGame(options) {
+  if (currentState === STATE.PRE) {
+    // Start Game
+    enterInGame(options);
+  } else if (currentState === STATE.IN) {
+    // Reset Game = start 시퀀스 재실행
+    resetInGame(options);
+  }
+}
 
 // Finish Game
-document.getElementById("btnFinish").onclick = () => {
-  if (state !== "IN") return;
+btnFinish.addEventListener("click", () => {
+  if (currentState !== STATE.IN) return;
 
-  state = "PRE";
-
-  document.getElementById("btnStart").textContent = "Start Game";
-
+  // ingame 종료
   finishInGame();
-  initPreGame((options) => {
-    state = "IN";
-    disablePreGameUI();
-    startInGame(options);
-  });
-};
+
+  // pregame으로 복귀
+  enterPreGame();
+});
