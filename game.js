@@ -1,5 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 /* =========================
-   State Definition
+   State
 ========================= */
 
 const STATE = {
@@ -10,21 +12,22 @@ const STATE = {
 let gameState = STATE.PRE;
 
 /* =========================
-   DOM Elements
+   DOM
 ========================= */
 
 // Areas
 const optionsArea = document.getElementById("optionsArea");
 const ingameArea  = document.getElementById("ingameArea");
+const optIgnoreWrapper = document.getElementById("optIgnoreWrapper");
 
 // Buttons
 const btnStart  = document.getElementById("btnStart");
 const btnFinish = document.getElementById("btnFinish");
 const btnHint   = document.getElementById("btnHint");
 
-// Ingame input/output
-const wordInput  = document.getElementById("wordInput");
-const statusText = document.getElementById("statusText");
+// Ingame
+const wordInput   = document.getElementById("wordInput");
+const statusText  = document.getElementById("statusText");
 const historyText = document.getElementById("historyText");
 
 // Options
@@ -35,10 +38,9 @@ const optOneShot    = document.getElementById("optAllowOneShot");
 const optComputer   = document.getElementById("optComputerMode");
 
 /* =========================
-   Databases (assumed loaded)
+   Databases (global-loaded)
 ========================= */
 
-// ⚠️ 실제로는 fetch해서 채우면 됨
 const allDB = {
   classic: {
     no:  window.CLASSIC_NO  || [],
@@ -50,33 +52,36 @@ const allDB = {
   }
 };
 
-// Ingame DB
-let inGameDB = [];
-
 /* =========================
-   Ingame Runtime State
+   Absolute One-Shot List
 ========================= */
 
-let usedSet = new Set();   // lower 기준
-let history = [];          // original 기록
-let currentLast = null;    // 다음 시작 문자
-let isPlayerTurn = true;
-let options = {};
+const ABSOLUTE_ONE_SHOT_LIST = buildAbsoluteOneShotList();
 
 /* =========================
-   Initial State
+   Ingame Runtime
+========================= */
+
+let inGameDB = [];
+let usedSet = new Set();
+let history = [];
+let currentLast = null;
+let options = {};
+let isPlayerTurn = true;
+
+/* =========================
+   Init
 ========================= */
 
 enterPreGame();
 
 /* =========================
-   State Transitions
+   State Control
 ========================= */
 
 function enterPreGame() {
   gameState = STATE.PRE;
 
-  // UI state
   optionsArea.classList.remove("disabled");
   ingameArea.classList.add("disabled");
 
@@ -108,24 +113,29 @@ function enterInGame() {
 }
 
 /* =========================
-   Option Constraints
+   Option Constraint
 ========================= */
 
-// Ignore Trailing Num은 Start / End Num이 켜져 있을 때만
 function applyOptionConstraint() {
-  optIgnoreNum.disabled = !optStartEnd.checked;
+  if (!optStartEnd.checked) {
+    optIgnoreNum.checked = false;
+    optIgnoreNum.disabled = true;
+    optIgnoreWrapper.classList.add("disabled");
+  } else {
+    optIgnoreNum.disabled = false;
+    optIgnoreWrapper.classList.remove("disabled");
+  }
 }
 
 optStartEnd.addEventListener("change", applyOptionConstraint);
 
 /* =========================
-   Button Handlers
+   Buttons
 ========================= */
 
 btnStart.addEventListener("click", () => {
   const opt = readOptions();
   inGameDB = buildInGameDB(opt);
-
   initGame(inGameDB, opt);
   enterInGame();
 });
@@ -138,7 +148,7 @@ btnFinish.addEventListener("click", () => {
 });
 
 /* =========================
-   Options Reader
+   Options
 ========================= */
 
 function readOptions() {
@@ -152,24 +162,18 @@ function readOptions() {
 }
 
 /* =========================
-   Ingame DB Builder
+   DB Builder
 ========================= */
 
 function buildInGameDB(opt) {
   const result = [];
 
-  // classic always
   result.push(...allDB.classic.no);
-  if (opt.useNum) {
-    result.push(...allDB.classic.yes);
-  }
+  if (opt.useNum) result.push(...allDB.classic.yes);
 
-  // platformer optional
   if (opt.usePlatformer) {
     result.push(...allDB.platformer.no);
-    if (opt.useNum) {
-      result.push(...allDB.platformer.yes);
-    }
+    if (opt.useNum) result.push(...allDB.platformer.yes);
   }
 
   return result;
@@ -199,7 +203,7 @@ function clearGame() {
 }
 
 /* =========================
-   Input Handling
+   Input
 ========================= */
 
 wordInput.addEventListener("keydown", e => {
@@ -222,28 +226,33 @@ function handlePlayerInput(raw) {
 
   const lower = input.toLowerCase();
 
-  // 1. Start char check (skip for first word)
-  if (currentLast !== null) {
-    if (lower[0] !== currentLast) {
-      setStatus(`❌ Must Start '${currentLast}'`);
-      return;
-    }
+  // 1. start char
+  if (currentLast !== null && lower[0] !== currentLast) {
+    setStatus(`❌ Must Start '${currentLast}'`);
+    return;
   }
 
-  // 2. DB existence check
+  // 2. DB
   const entry = inGameDB.find(w => w.lower === lower);
   if (!entry) {
     setStatus("❌ Not in DB");
     return;
   }
 
-  // 3. Used check
+  // 3. used
   if (usedSet.has(lower)) {
     setStatus("❌ Already Used");
     return;
   }
 
-  // 4. Accept
+  // 4. absolute one-shot (option)
+  if (!options.allowOneShot) {
+    if (ABSOLUTE_ONE_SHOT_LIST.some(w => w.lower === lower)) {
+      setStatus("❌ Absolute One-Shot Word");
+      return;
+    }
+  }
+
   acceptWord(entry, "Player");
 }
 
@@ -260,10 +269,9 @@ function acceptWord(entry, who) {
 
   currentLast = getLastChar(entry);
 
-  // Computer mode hook
   if (options.computerMode) {
     isPlayerTurn = !isPlayerTurn;
-    // computerTurn() ← 여기 나중에 붙이면 됨
+    // computerTurn() ← 이후 구현
   }
 }
 
@@ -272,12 +280,37 @@ function acceptWord(entry, who) {
 ========================= */
 
 function getLastChar(entry) {
-  if (options.ignoreTrailingNum) {
-    return entry.last_alpha;
-  }
-  return entry.last;
+  return options.ignoreTrailingNum ? entry.last_alpha : entry.last;
 }
 
 function setStatus(msg) {
   statusText.textContent = msg;
 }
+
+/* =========================
+   Absolute One-Shot Builder
+========================= */
+
+function buildAbsoluteOneShotList() {
+  const yesPool = [
+    ...allDB.classic.yes,
+    ...allDB.platformer.yes
+  ];
+
+  const result = [];
+
+  for (const w of yesPool) {
+    if (!["5", "6", "7"].includes(w.last)) continue;
+
+    const canChain = yesPool.some(o =>
+      o.lower !== w.lower &&
+      o.first === w.last
+    );
+
+    if (!canChain) result.push(w);
+  }
+
+  return result;
+}
+
+});
