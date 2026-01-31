@@ -1,147 +1,220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>GD Word Chain</title>
+/* ===================== DOM ===================== */
 
-  <link rel="stylesheet" href="style.css">
+const startBtn = document.getElementById("startBtn");
+const endBtn = document.getElementById("endBtn");
+const wordInput = document.getElementById("wordInput");
+const text1 = document.getElementById("text1");
+const text2 = document.getElementById("text2");
+const dictionaryBox = document.getElementById("dictionaryBox");
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+const optPlatformer = document.getElementById("optPlatformer");
+const optNumEdge = document.getElementById("optNumEdge");
+const optNumIgnore = document.getElementById("optNumIgnore");
+const optNoOneShot = document.getElementById("optNoOneShot");
+const optAI = document.getElementById("optAI");
+
+/* ===================== STATE ===================== */
+
+let state = "IDLE"; // IDLE | PLAYING
+let turn = "PLAYER";
+
+let gameDB = [];
+let used = new Set();
+let history = [];
+let lastChar = null;
+
+/* ===================== UTIL ===================== */
+
+function status(msg) {
+  text1.textContent = msg;
+}
+
+function updateHistory() {
+  text2.textContent = history.join(" → ");
+}
+
+function resetGame() {
+  used.clear();
+  history = [];
+  lastChar = null;
+  turn = "PLAYER";
+  wordInput.value = "";
+  updateHistory();
+}
+
+/* ===================== OPTIONS ===================== */
+
+function getOptions() {
+  return {
+    platformer: optPlatformer.checked,
+    numEdge: optNumEdge.checked,
+    ignoreTrailing: optNumIgnore.checked,
+    noOneShot: optNoOneShot.checked,
+    computer: optAI.checked
+  };
+}
+
+/* ===================== DB LOAD ===================== */
+
+async function loadGameDB() {
+  const opt = getOptions();
+  const files = [];
+
+  files.push("data/db/classic_no_num.json");
+  if (opt.numEdge) files.push("data/db/classic_yes_num.json");
+
+  if (opt.platformer) {
+    files.push("data/db/platformer_no_num.json");
+    if (opt.numEdge) files.push("data/db/platformer_yes_num.json");
+  }
+
+  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+  gameDB = lists.flat();
+}
+
+/* ===================== RULES ===================== */
+
+function nextChar(entry, opt) {
+  if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
+    return entry.lastAlpha;
+  }
+  return entry.last;
+}
+
+function hasContinuation(char, usedSet) {
+  return gameDB.some(e => !usedSet.has(e.key) && e.first === char);
+}
+
+function playableWords(char, usedSet, opt) {
+  return gameDB.filter(e => {
+    if (usedSet.has(e.key)) return false;
+    if (e.first !== char) return false;
+
+    if (opt.noOneShot) {
+      const nc = nextChar(e, opt);
+      return hasContinuation(nc, usedSet);
     }
+    return true;
+  });
+}
 
-    fieldset {
-      margin-bottom: 12px;
-      padding: 10px;
-    }
+function checkLose(playerName) {
+  if (!lastChar) return false;
 
-    input[type="text"] {
-      width: 320px;
-      padding: 6px;
-      font-size: 14px;
-    }
+  const opt = getOptions();
+  const moves = playableWords(lastChar, used, opt);
+  if (moves.length === 0) {
+    status(`❌ ${playerName} loses`);
+    state = "IDLE";
+    wordInput.disabled = true;
+    return true;
+  }
+  return false;
+}
 
-    button {
-      margin-right: 6px;
-      padding: 6px 10px;
-      font-size: 14px;
-    }
+/* ===================== PLAYER ===================== */
 
-    .box {
-      border: 1px solid #aaa;
-      padding: 6px;
-      margin-top: 6px;
-      max-height: 220px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-size: 14px;
-    }
+function playerSubmit() {
+  if (state !== "PLAYING" || turn !== "PLAYER") return;
 
-    .disabled {
-      opacity: 0.5;
-    }
+  if (checkLose("Player")) return;
 
-    .hidden {
-      display: none;
-    }
+  const input = wordInput.value.trim().toLowerCase();
+  if (!input) return;
 
-    #text1 {
-      font-weight: bold;
-      min-height: 1.6em;
-      margin-bottom: 6px;
-    }
-  </style>
-</head>
-<body>
+  const entry = gameDB.find(e => e.key === input);
 
-<h2>GD Word Chain</h2>
+  if (lastChar && (!entry || entry.first !== lastChar)) {
+    status(`❌ Must start with '${lastChar}'`);
+    return;
+  }
 
-<!-- ======================================================
-     GAME OPTIONS (PRE-GAME ONLY)
-====================================================== -->
-<fieldset id="options">
-  <legend>Game Options</legend>
+  if (!entry) {
+    status("❌ Not in DB");
+    return;
+  }
 
-  <label>
-    <input type="checkbox" id="optPlatformer" checked>
-    Include Platformer
-  </label><br>
+  if (used.has(entry.key)) {
+    status("❌ Already used");
+    return;
+  }
 
-  <label>
-    <input type="checkbox" id="optNumEdge" checked>
-    Allow Numbers at Start / End
-  </label><br>
+  const opt = getOptions();
+  const nc = nextChar(entry, opt);
 
-  <label id="optIgnoreWrap" class="disabled">
-    <input type="checkbox" id="optNumIgnore">
-    Ignore Trailing Numbers
-  </label><br>
+  if (opt.noOneShot && !hasContinuation(nc, used)) {
+    status("❌ One-shot word");
+    return;
+  }
 
-  <label>
-    <input type="checkbox" id="optNoOneShot" checked>
-    Disallow One-Shot Words
-  </label><br>
+  used.add(entry.key);
+  history.push(entry.original);
+  lastChar = nc;
+  wordInput.value = "";
 
-  <label>
-    <input type="checkbox" id="optAI" checked>
-    Computer Mode
-  </label>
-</fieldset>
+  status(`⭕ Player: ${entry.original}`);
+  updateHistory();
 
-<!-- ======================================================
-     DICTIONARY (PRE-GAME ONLY)
-====================================================== -->
-<fieldset id="dictionaryBox">
-  <legend>Dictionary (Pre-Game Only)</legend>
+  if (opt.computer) {
+    turn = "COMPUTER";
+    setTimeout(computerTurn, 300);
+  }
+}
 
-  <label>
-    <input type="radio" name="dictMode" id="dictPrefix" checked>
-    Prefix Search
-  </label>
-  <label>
-    <input type="radio" name="dictMode" id="dictSuffix">
-    Suffix Search
-  </label>
+/* ===================== COMPUTER ===================== */
 
-  <br><br>
+function computerTurn() {
+  if (state !== "PLAYING") return;
 
-  <input type="text" id="dictInput" placeholder="Type to search...">
-  <div id="dictResult" class="box"></div>
+  if (checkLose("Computer")) return;
 
-  <br>
+  const opt = getOptions();
+  const moves = playableWords(lastChar, used, opt);
+  const pick = moves[Math.floor(Math.random() * moves.length)];
 
-  <button id="oneshotBtn">Generate One-Shot List</button>
-  <div id="oneshotResult" class="box"></div>
-</fieldset>
+  used.add(pick.key);
+  history.push(pick.original);
+  lastChar = nextChar(pick, opt);
 
-<hr>
+  status(`⭕ Computer: ${pick.original}`);
+  updateHistory();
 
-<!-- ======================================================
-     GAME CONTROL
-====================================================== -->
-<button id="startBtn">Game Start</button>
-<button id="endBtn">Game End</button>
+  turn = "PLAYER";
+}
 
-<br><br>
+/* ===================== EVENTS ===================== */
 
-<input
-  type="text"
-  id="wordInput"
-  placeholder="Enter level name"
-  disabled
->
+startBtn.onclick = async () => {
+  if (state === "IDLE") {
+    await loadGameDB();
+    resetGame();
+    dictionaryBox.classList.add("hidden");
+    wordInput.disabled = false;
+    state = "PLAYING";
+    startBtn.textContent = "Game Reset";
+    status("Game Started");
+  } else {
+    resetGame();
+    status("Game Reset");
+  }
+};
 
-<!-- ======================================================
-     GAME OUTPUT
-====================================================== -->
-<h3>Status</h3>
-<div id="text1"></div>
+endBtn.onclick = () => {
+  state = "IDLE";
+  resetGame();
+  dictionaryBox.classList.remove("hidden");
+  wordInput.disabled = true;
+  startBtn.textContent = "Game Start";
+  status("");
+};
 
-<h3>History</h3>
-<div id="text2" class="box"></div>
+wordInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") playerSubmit();
+});
 
-<script src="game.js"></script>
-</body>
-</html>
+/* ===================== INIT ===================== */
+
+optNumIgnore.disabled = !optNumEdge.checked;
+optNumEdge.addEventListener("change", () => {
+  optNumIgnore.disabled = !optNumEdge.checked;
+});
