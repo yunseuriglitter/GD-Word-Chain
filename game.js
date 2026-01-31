@@ -7,7 +7,6 @@ let turn = "PLAYER"; // PLAYER | AI
 
 let gameDB = [];
 let allDB = [];
-
 let used = new Set();
 let history = [];
 let lastChar = null;
@@ -27,7 +26,7 @@ const optIgnoreWrap = document.getElementById("optIgnoreWrap");
 const optNoOneShot = document.getElementById("optNoOneShot");
 const optAI = document.getElementById("optAI");
 
-// controls
+// game control
 const startBtn = document.getElementById("startBtn");
 const endBtn = document.getElementById("endBtn");
 const wordInput = document.getElementById("wordInput");
@@ -42,6 +41,7 @@ const dictInput = document.getElementById("dictInput");
 const dictResult = document.getElementById("dictResult");
 const dictPrefix = document.getElementById("dictPrefix");
 const dictSuffix = document.getElementById("dictSuffix");
+
 const oneshotBtn = document.getElementById("oneshotBtn");
 const oneshotResult = document.getElementById("oneshotResult");
 
@@ -110,6 +110,7 @@ syncOptions();
    DB LOADERS
 ========================================================= */
 
+// 전체 DB (사전 전용)
 async function loadAllDB() {
   if (allDB.length) return;
 
@@ -124,6 +125,7 @@ async function loadAllDB() {
   allDB = lists.flat();
 }
 
+// 게임 DB (옵션 반영)
 async function loadGameDB() {
   const opt = getOptions();
   const files = [];
@@ -141,7 +143,7 @@ async function loadGameDB() {
 }
 
 /* =========================================================
-   CORE LOGIC
+   CORE RULE FUNCTIONS
 ========================================================= */
 
 function getNextChar(entry, opt) {
@@ -151,32 +153,19 @@ function getNextChar(entry, opt) {
   return entry.last;
 }
 
-// 다음 글자로 시작하는 단어가 있는가
-function hasAnyNext(c) {
+function hasNextWord(char) {
   return gameDB.some(e =>
     !used.has(e.key) &&
-    e.first === c
+    e.first === char
   );
 }
 
-// 한방이 아닌 선택지가 있는가
-function hasNonOneShotNext(c, opt, excludeKey = null) {
+function hasNonOneShot(char, opt) {
   return gameDB.some(e =>
     !used.has(e.key) &&
-    e.key !== excludeKey &&
-    e.first === c &&
-    hasAnyNext(getNextChar(e, opt))
+    e.first === char &&
+    hasNextWord(getNextChar(e, opt))
   );
-}
-
-// 이 단어는 한방 금지 룰에서 입력 불가인가?
-function isForbiddenOneShot(entry, opt) {
-  const c = getNextChar(entry, opt);
-
-  if (!hasAnyNext(c)) return true;
-  if (!hasNonOneShotNext(c, opt, entry.key)) return true;
-
-  return false;
 }
 
 /* =========================================================
@@ -192,28 +181,26 @@ function accept(entry, who) {
   if (who === "AI") countAI++;
 
   const opt = getOptions();
-  const score = opt.aiMode
+  const countText = opt.aiMode
     ? `(P:${countPlayer} / AI:${countAI})`
     : `(P:${countPlayer})`;
 
-  logStatus(`⭕ ${who}: ${entry.original} ${score}`);
+  logStatus(`⭕ ${who}: ${entry.original} ${countText}`);
   logHistory();
   wordInput.value = "";
 }
 
 function lose(who, reason) {
   const opt = getOptions();
-  const score = opt.aiMode
+  const countText = opt.aiMode
     ? `(P:${countPlayer} / AI:${countAI})`
     : `(P:${countPlayer})`;
 
-  logStatus(`❌ ${who} loses: ${reason} ${score}`);
+  logStatus(`❌ ${who} loses: ${reason} ${countText}`);
   state = "ENDED";
 }
 
-/* =========================================================
-   PLAYER TURN
-========================================================= */
+/* ================= PLAYER ================= */
 
 function onSubmit() {
   if (state !== "PLAYING" || turn !== "PLAYER") return;
@@ -221,24 +208,23 @@ function onSubmit() {
   const input = wordInput.value.toLowerCase().trim();
   if (!input) return;
 
-  // 1. 시작 글자
+  // 시작 문자 검사 (DB 이전)
   if (lastChar && input[0] !== lastChar) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
 
   const entry = gameDB.find(e => e.key === input);
-
-  // 2. DB
   if (!entry) return logStatus("❌ Not in DB");
-
-  // 3. 중복
   if (used.has(entry.key)) return logStatus("❌ Already used");
 
   const opt = getOptions();
+  const nextChar = getNextChar(entry, opt);
 
-  // 4. 한방 금지 입력 차단
-  if (opt.noOneShot && isForbiddenOneShot(entry, opt)) {
-    return logStatus("❌ No One-Shot Words Rule");
+  // 한방 금지
+  if (opt.noOneShot) {
+    if (!hasNonOneShot(nextChar, opt)) {
+      return lose("Player", "One-shot word");
+    }
   }
 
   accept(entry, "Player");
@@ -249,36 +235,21 @@ function onSubmit() {
   }
 }
 
-/* =========================================================
-   AI TURN
-========================================================= */
+/* ================= AI ================= */
 
 function aiTurn() {
   if (state !== "PLAYING") return;
 
   const opt = getOptions();
 
-  // 🔥 첫 턴 예외 (lastChar 없음)
-  if (lastChar) {
-    if (opt.noOneShot) {
-      if (!hasNonOneShotNext(lastChar, opt)) {
-        return lose("AI", "No valid move");
-      }
-    } else {
-      if (!hasAnyNext(lastChar)) {
-        return lose("AI", "No possible continuation");
-      }
-    }
-  }
-
   const candidates = gameDB.filter(e =>
     !used.has(e.key) &&
-    (!lastChar || e.first === lastChar) &&
-    (!opt.noOneShot || !isForbiddenOneShot(e, opt))
+    e.first === lastChar &&
+    (!opt.noOneShot || hasNonOneShot(getNextChar(e, opt), opt))
   );
 
   if (candidates.length === 0) {
-    return lose("AI", "No valid move");
+    return lose("AI", "No possible continuation");
   }
 
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
@@ -315,7 +286,7 @@ wordInput.addEventListener("keydown", e => {
 });
 
 /* =========================================================
-   DICTIONARY
+   DICTIONARY (PREFIX / SUFFIX)
 ========================================================= */
 
 dictInput.addEventListener("input", async () => {
@@ -341,7 +312,7 @@ dictInput.addEventListener("input", async () => {
 });
 
 /* =========================================================
-   ONE-SHOT DICTIONARY (PRE-GAME)
+   ONE-SHOT DICTIONARY (YES_NUM PRE-CALC)
 ========================================================= */
 
 oneshotBtn.onclick = async () => {
@@ -354,7 +325,9 @@ oneshotBtn.onclick = async () => {
     "data/db/platformer_yes_num.json"
   ];
 
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
+  const lists = await Promise.all(
+    files.map(f => fetch(f).then(r => r.json()))
+  );
   const yesNumDB = lists.flat();
 
   const oneshots = yesNumDB.filter(e => {
