@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>GD Word Chain</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       font-family: sans-serif;
@@ -22,33 +21,21 @@
       align-items: flex-start;
     }
 
-    .left,
-    .right {
-      background: #fff;
+    /* ===== Fieldset Common ===== */
+    fieldset {
       border: 2px solid #444;
       padding: 16px;
-    }
-
-    .left {
-      width: 300px;
-    }
-
-    .right {
-      flex: 1;
-      min-width: 320px;
-    }
-
-    /* ===== Options ===== */
-    fieldset {
-      border: none;
-      padding: 0;
-      margin: 0 0 16px 0;
+      background: #fff;
     }
 
     legend {
       font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
+      padding: 0 8px;
+    }
+
+    /* ===== Left : Options ===== */
+    .left {
+      width: 260px;   /* 🔥 가로폭 줄임 */
     }
 
     .option {
@@ -56,17 +43,22 @@
     }
 
     .controls {
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
     .controls button {
       width: 100%;
       padding: 8px;
-      margin-bottom: 8px;
+      margin-top: 6px;
       font-size: 14px;
     }
 
-    /* ===== Ingame ===== */
+    /* ===== Right : Ingame ===== */
+    .right {
+      flex: 1;
+      min-width: 420px;
+    }
+
     .section {
       margin-bottom: 16px;
     }
@@ -86,7 +78,6 @@
       width: 70%;
       padding: 6px;
       font-size: 14px;
-      box-sizing: border-box;
     }
 
     #btnHint {
@@ -98,7 +89,7 @@
 
     #statusText,
     #historyText {
-      min-height: 24px;
+      min-height: 28px;
       padding: 6px;
       background: #f0f0f0;
       font-family: monospace;
@@ -108,65 +99,43 @@
 </head>
 <body>
 
-  <h1>GD Word Chain</h1>
+<h1>GD Word Chain</h1>
 
-  <div class="container">
+<div class="container">
 
-    <!-- =====================
-         Left : Options
-    ====================== -->
-    <div class="left">
+  <!-- ===== Left : Options ===== -->
+  <div class="left">
+    <fieldset>
+      <legend>Options</legend>
 
-      <fieldset id="options">
-        <legend>Options</legend>
+      <div class="option">
+        <label><input type="checkbox" id="optPlatformer"> Platformer</label>
+      </div>
+      <div class="option">
+        <label><input type="checkbox" id="optStartEndNum"> Start / End Num</label>
+      </div>
+      <div class="option">
+        <label><input type="checkbox" id="optIgnoreTrailingNum"> Ignore Trailing Num</label>
+      </div>
+      <div class="option">
+        <label><input type="checkbox" id="optAllowOneShot"> Allow One-Shot Word</label>
+      </div>
+      <div class="option">
+        <label><input type="checkbox" id="optComputerMode"> Computer Mode</label>
+      </div>
 
-        <div class="option">
-          <label>
-            <input type="checkbox" id="optPlatformer" checked>
-            Platformer
-          </label>
-        </div>
-
-        <div class="option">
-          <label>
-            <input type="checkbox" id="optStartEndNum" checked>
-            Start / End Num
-          </label>
-        </div>
-
-        <div class="option">
-          <label>
-            <input type="checkbox" id="optIgnoreTrailingNum">
-            Ignore Trailing Num
-          </label>
-        </div>
-
-        <div class="option">
-          <label>
-            <input type="checkbox" id="optAllowOneShot">
-            Allow One-Shot Word
-          </label>
-        </div>
-
-        <div class="option">
-          <label>
-            <input type="checkbox" id="optComputerMode">
-            Computer Mode
-          </label>
-        </div>
-      </fieldset>
-
+      <!-- Start / Finish 버튼은 옵션 아래 -->
       <div class="controls">
         <button id="btnStart">Start Game</button>
         <button id="btnFinish">Finish Game</button>
       </div>
+    </fieldset>
+  </div>
 
-    </div>
-
-    <!-- =====================
-         Right : Ingame
-    ====================== -->
-    <div class="right">
+  <!-- ===== Right : Ingame ===== -->
+  <div class="right">
+    <fieldset>
+      <legend>Ingame</legend>
 
       <div class="section">
         <div class="section-title">Input</div>
@@ -191,9 +160,10 @@
         <div id="historyText"></div>
       </div>
 
-    </div>
-
+    </fieldset>
   </div>
+
+</div>
 
 </body>
 </html>
