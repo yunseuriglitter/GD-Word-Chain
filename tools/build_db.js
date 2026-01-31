@@ -99,7 +99,7 @@ function splitYesNoNum(list) {
   const no  = [];
 
   for (const w of list) {
-    if (/[0-9]$/.test(w.original)) yes.push(w);
+    if (/^[0-9]|[0-9]$/.test(w.original)) yes.push(w);
     else no.push(w);
   }
 
