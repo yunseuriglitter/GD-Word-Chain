@@ -11,6 +11,7 @@
 
   <!-- OPTIONS -->
   <div id="optionsArea">
+    <h3>Options</h3>
     <label><input type="checkbox" id="optStartEndNum" checked> Start / End Num</label><br>
     <label><input type="checkbox" id="optIgnoreTrailingNum"> Ignore Trailing Num</label>
   </div>
@@ -21,21 +22,44 @@
   <button id="btnStart">Start Game</button>
   <button id="btnFinish">Finish Game</button>
 
-  <br><br>
+  <hr>
+
+  <!-- DICTIONARY -->
+  <div id="dictionaryArea">
+    <h3>Dictionary</h3>
+
+    <label>
+      <input type="radio" name="dictMode" id="dictPrefix" checked>
+      Prefix
+    </label>
+    <label>
+      <input type="radio" name="dictMode" id="dictSuffix">
+      Suffix
+    </label>
+
+    <br><br>
+
+    <input type="text" id="dictSearch" placeholder="Search..." />
+
+    <pre id="dictResult"></pre>
+  </div>
+
+  <hr>
 
   <!-- ONE SHOT -->
   <div id="oneShotArea">
+    <h3>One-Shot Word</h3>
     <button id="btnFindOneShot">Find</button>
     <pre id="oneShotResult"></pre>
   </div>
 
-  <!-- DB (경로 중요) -->
+  <!-- DB (경로 정확히) -->
   <script src="data/db/classic_no_num.js"></script>
   <script src="data/db/classic_yes_num.js"></script>
   <script src="data/db/platformer_no_num.js"></script>
   <script src="data/db/platformer_yes_num.js"></script>
 
-  <!-- MAIN (반드시 맨 아래) -->
+  <!-- MAIN -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
