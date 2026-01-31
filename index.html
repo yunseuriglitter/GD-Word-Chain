@@ -1,220 +1,189 @@
-/* ===================== DOM ===================== */
-
-const startBtn = document.getElementById("startBtn");
-const endBtn = document.getElementById("endBtn");
-const wordInput = document.getElementById("wordInput");
-const text1 = document.getElementById("text1");
-const text2 = document.getElementById("text2");
-const dictionaryBox = document.getElementById("dictionaryBox");
-
-const optPlatformer = document.getElementById("optPlatformer");
-const optNumEdge = document.getElementById("optNumEdge");
-const optNumIgnore = document.getElementById("optNumIgnore");
-const optNoOneShot = document.getElementById("optNoOneShot");
-const optAI = document.getElementById("optAI");
-
-/* ===================== STATE ===================== */
-
-let state = "IDLE"; // IDLE | PLAYING
-let turn = "PLAYER";
-
-let gameDB = [];
-let used = new Set();
-let history = [];
-let lastChar = null;
-
-/* ===================== UTIL ===================== */
-
-function status(msg) {
-  text1.textContent = msg;
-}
-
-function updateHistory() {
-  text2.textContent = history.join(" → ");
-}
-
-function resetGame() {
-  used.clear();
-  history = [];
-  lastChar = null;
-  turn = "PLAYER";
-  wordInput.value = "";
-  updateHistory();
-}
-
-/* ===================== OPTIONS ===================== */
-
-function getOptions() {
-  return {
-    platformer: optPlatformer.checked,
-    numEdge: optNumEdge.checked,
-    ignoreTrailing: optNumIgnore.checked,
-    noOneShot: optNoOneShot.checked,
-    computer: optAI.checked
-  };
-}
-
-/* ===================== DB LOAD ===================== */
-
-async function loadGameDB() {
-  const opt = getOptions();
-  const files = [];
-
-  files.push("data/db/classic_no_num.json");
-  if (opt.numEdge) files.push("data/db/classic_yes_num.json");
-
-  if (opt.platformer) {
-    files.push("data/db/platformer_no_num.json");
-    if (opt.numEdge) files.push("data/db/platformer_yes_num.json");
-  }
-
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
-  gameDB = lists.flat();
-}
-
-/* ===================== RULES ===================== */
-
-function nextChar(entry, opt) {
-  if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
-    return entry.lastAlpha;
-  }
-  return entry.last;
-}
-
-function hasContinuation(char, usedSet) {
-  return gameDB.some(e => !usedSet.has(e.key) && e.first === char);
-}
-
-function playableWords(char, usedSet, opt) {
-  return gameDB.filter(e => {
-    if (usedSet.has(e.key)) return false;
-    if (e.first !== char) return false;
-
-    if (opt.noOneShot) {
-      const nc = nextChar(e, opt);
-      return hasContinuation(nc, usedSet);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>GD Word Chain</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
     }
-    return true;
-  });
-}
+    fieldset {
+      margin-bottom: 16px;
+    }
+    #history {
+      margin-top: 12px;
+      min-height: 24px;
+      font-weight: bold;
+    }
+    #status {
+      margin-top: 8px;
+      color: #333;
+    }
+    .disabled {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
 
-function checkLose(playerName) {
-  if (!lastChar) return false;
+  <h1>GD Word Chain</h1>
 
-  const opt = getOptions();
-  const moves = playableWords(lastChar, used, opt);
-  if (moves.length === 0) {
-    status(`❌ ${playerName} loses`);
-    state = "IDLE";
-    wordInput.disabled = true;
-    return true;
-  }
-  return false;
-}
+  <!-- =====================
+       설정 영역
+  ====================== -->
+  <fieldset id="optionArea">
+    <legend>게임 설정</legend>
 
-/* ===================== PLAYER ===================== */
+    <label>
+      <input type="checkbox" id="optPlatformer" checked />
+      Platformer 포함
+    </label>
+    <br />
 
-function playerSubmit() {
-  if (state !== "PLAYING" || turn !== "PLAYER") return;
+    <label>
+      <input type="checkbox" id="optYesNum" checked />
+      숫자 포함 단어 사용
+    </label>
+    <br />
 
-  if (checkLose("Player")) return;
+    <label id="ignoreNumLabel" class="disabled">
+      <input type="checkbox" id="optIgnoreNum" disabled />
+      맨 뒤 숫자 무시
+    </label>
+    <br />
 
-  const input = wordInput.value.trim().toLowerCase();
-  if (!input) return;
+    <label>
+      <input type="checkbox" id="optNoOneShot" />
+      한방단어 금지
+    </label>
 
-  const entry = gameDB.find(e => e.key === input);
+    <hr />
 
-  if (lastChar && (!entry || entry.first !== lastChar)) {
-    status(`❌ Must start with '${lastChar}'`);
-    return;
-  }
+    <label>
+      모드:
+      <select id="optMode">
+        <option value="solo">Solo Mode</option>
+        <option value="computer">Computer Mode</option>
+      </select>
+    </label>
 
-  if (!entry) {
-    status("❌ Not in DB");
-    return;
-  }
+    <hr />
 
-  if (used.has(entry.key)) {
-    status("❌ Already used");
-    return;
-  }
+    <label>
+      시작 글자:
+      <input type="text" id="startChar" maxlength="1" value="a" />
+    </label>
+  </fieldset>
 
-  const opt = getOptions();
-  const nc = nextChar(entry, opt);
+  <!-- =====================
+       버튼 영역
+  ====================== -->
+  <button id="btnStart">Game Start</button>
+  <button id="btnReset" style="display:none;">Game Reset</button>
+  <button id="btnEnd" style="display:none;">Game End</button>
 
-  if (opt.noOneShot && !hasContinuation(nc, used)) {
-    status("❌ One-shot word");
-    return;
-  }
+  <hr />
 
-  used.add(entry.key);
-  history.push(entry.original);
-  lastChar = nc;
-  wordInput.value = "";
+  <!-- =====================
+       인게임 영역
+  ====================== -->
+  <div id="gameArea" style="display:none;">
+    <input
+      type="text"
+      id="wordInput"
+      placeholder="단어 입력 후 Enter"
+      autocomplete="off"
+    />
+    <div id="status"></div>
+    <div id="history"></div>
+  </div>
 
-  status(`⭕ Player: ${entry.original}`);
-  updateHistory();
+  <!-- =====================
+       스크립트
+  ====================== -->
+  <script src="game.js"></script>
+  <script>
+    const optPlatformer = document.getElementById("optPlatformer");
+    const optYesNum = document.getElementById("optYesNum");
+    const optIgnoreNum = document.getElementById("optIgnoreNum");
+    const ignoreNumLabel = document.getElementById("ignoreNumLabel");
+    const optNoOneShot = document.getElementById("optNoOneShot");
+    const optMode = document.getElementById("optMode");
+    const startCharInput = document.getElementById("startChar");
 
-  if (opt.computer) {
-    turn = "COMPUTER";
-    setTimeout(computerTurn, 300);
-  }
-}
+    const btnStart = document.getElementById("btnStart");
+    const btnReset = document.getElementById("btnReset");
+    const btnEnd = document.getElementById("btnEnd");
 
-/* ===================== COMPUTER ===================== */
+    const gameArea = document.getElementById("gameArea");
+    const optionArea = document.getElementById("optionArea");
 
-function computerTurn() {
-  if (state !== "PLAYING") return;
+    /* ---------------------
+       체크박스 의존성
+    --------------------- */
+    optYesNum.addEventListener("change", () => {
+      if (!optYesNum.checked) {
+        optIgnoreNum.checked = false;
+        optIgnoreNum.disabled = true;
+        ignoreNumLabel.classList.add("disabled");
+      } else {
+        optIgnoreNum.disabled = false;
+        ignoreNumLabel.classList.remove("disabled");
+      }
+    });
 
-  if (checkLose("Computer")) return;
+    /* ---------------------
+       게임 시작
+    --------------------- */
+    btnStart.addEventListener("click", async () => {
+      const startChar = startCharInput.value.trim();
+      if (!startChar) {
+        alert("시작 글자를 입력하세요.");
+        return;
+      }
 
-  const opt = getOptions();
-  const moves = playableWords(lastChar, used, opt);
-  const pick = moves[Math.floor(Math.random() * moves.length)];
+      const option = {
+        usePlatformer: optPlatformer.checked,
+        useYesNum: optYesNum.checked,
+        ignoreNumber: optIgnoreNum.checked,
+        noOneShot: optNoOneShot.checked,
+        mode: optMode.value
+      };
 
-  used.add(pick.key);
-  history.push(pick.original);
-  lastChar = nextChar(pick, opt);
+      await startGame(startChar, option);
 
-  status(`⭕ Computer: ${pick.original}`);
-  updateHistory();
+      optionArea.disabled = true;
+      gameArea.style.display = "block";
 
-  turn = "PLAYER";
-}
+      btnStart.style.display = "none";
+      btnReset.style.display = "inline";
+      btnEnd.style.display = "inline";
+    });
 
-/* ===================== EVENTS ===================== */
+    /* ---------------------
+       게임 리셋
+    --------------------- */
+    btnReset.addEventListener("click", async () => {
+      const option = {
+        usePlatformer: optPlatformer.checked,
+        useYesNum: optYesNum.checked,
+        ignoreNumber: optIgnoreNum.checked,
+        noOneShot: optNoOneShot.checked,
+        mode: optMode.value
+      };
 
-startBtn.onclick = async () => {
-  if (state === "IDLE") {
-    await loadGameDB();
-    resetGame();
-    dictionaryBox.classList.add("hidden");
-    wordInput.disabled = false;
-    state = "PLAYING";
-    startBtn.textContent = "Game Reset";
-    status("Game Started");
-  } else {
-    resetGame();
-    status("Game Reset");
-  }
-};
+      await startGame(startCharInput.value, option);
+    });
 
-endBtn.onclick = () => {
-  state = "IDLE";
-  resetGame();
-  dictionaryBox.classList.remove("hidden");
-  wordInput.disabled = true;
-  startBtn.textContent = "Game Start";
-  status("");
-};
+    /* ---------------------
+       게임 종료
+    --------------------- */
+    btnEnd.addEventListener("click", () => {
+      location.reload();
+    });
+  </script>
 
-wordInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") playerSubmit();
-});
-
-/* ===================== INIT ===================== */
-
-optNumIgnore.disabled = !optNumEdge.checked;
-optNumEdge.addEventListener("change", () => {
-  optNumIgnore.disabled = !optNumEdge.checked;
-});
+</body>
+</html>
