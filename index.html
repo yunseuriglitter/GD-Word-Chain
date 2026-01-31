@@ -6,16 +6,15 @@
 
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
       padding: 20px;
-      background: #f7f7f7;
     }
 
     h1 {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
-    /* ===== Layout ===== */
     .container {
       display: flex;
       gap: 20px;
@@ -23,183 +22,137 @@
     }
 
     fieldset {
-      border: 2px solid #444;
+      border: 2px solid #333;
       padding: 16px;
       background: #fff;
     }
 
     legend {
       font-weight: bold;
-      padding: 0 8px;
+      padding: 0 6px;
     }
 
-    .left {
-      width: 260px;
-    }
-
-    .right {
-      flex: 1;
-      min-width: 420px;
-    }
-
-    /* ===== Disabled State ===== */
+    /* ===== Disabled Area ===== */
     .disabled {
       opacity: 0.4;
       pointer-events: none;
-      user-select: none;
     }
 
-    /* ===== Options ===== */
+    /* ===== Left: Options ===== */
+    #optionsArea {
+      width: 260px;
+    }
+
     .option {
-      margin: 8px 0;
+      display: block;
+      margin-bottom: 10px;
     }
 
     .controls {
-      margin-top: 12px;
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
     }
 
-    .controls button {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-
-    /* Start / Finish는 항상 활성 */
-    .controls button {
-      pointer-events: auto;
-      opacity: 1;
-    }
-
-    /* ===== Ingame ===== */
-    .section {
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-weight: bold;
-      margin-bottom: 6px;
+    /* ===== Right: Ingame ===== */
+    #ingameArea {
+      flex: 1;
+      min-width: 300px;
     }
 
     .input-row {
       display: flex;
       gap: 8px;
+      margin-bottom: 12px;
     }
 
     #wordInput {
       width: 70%;
       padding: 6px;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     #btnHint {
       width: 30%;
-      padding: 6px;
-      font-size: 14px;
-      cursor: pointer;
     }
 
-    #statusText,
-    #historyText {
-      min-height: 28px;
-      padding: 6px;
-      background: #f0f0f0;
-      font-family: monospace;
+    .box {
+      border: 1px solid #999;
+      padding: 8px;
+      min-height: 40px;
+      background: #fafafa;
+      margin-bottom: 12px;
       white-space: pre-wrap;
     }
   </style>
 </head>
+
 <body>
 
 <h1>GD Word Chain</h1>
 
 <div class="container">
 
-  <!-- =====================
-       Left : Options
-  ====================== -->
-  <div class="left">
-    <fieldset id="optionsArea">
-      <legend>Options</legend>
+  <!-- ================= Options ================= -->
+  <fieldset id="optionsArea">
+    <legend>Options</legend>
 
-      <div class="option">
-        <label>
-          <input type="checkbox" id="optPlatformer" checked>
-          Platformer
-        </label>
-      </div>
+    <label class="option">
+      <input type="checkbox" id="optPlatformer" checked>
+      Platformer
+    </label>
 
-      <div class="option">
-        <label>
-          <input type="checkbox" id="optStartEndNum" checked>
-          Start / End Num
-        </label>
-      </div>
+    <label class="option">
+      <input type="checkbox" id="optStartEndNum" checked>
+      Start / End Num
+    </label>
 
-      <div class="option">
-        <label>
-          <input type="checkbox" id="optIgnoreTrailingNum">
-          Ignore Trailing Num
-        </label>
-      </div>
+    <label class="option" id="optIgnoreWrapper">
+      <input type="checkbox" id="optIgnoreTrailingNum">
+      Ignore Trailing Num
+    </label>
 
-      <div class="option">
-        <label>
-          <input type="checkbox" id="optAllowOneShot">
-          Allow One-Shot Word
-        </label>
-      </div>
+    <label class="option">
+      <input type="checkbox" id="optAllowOneShot">
+      Allow One-Shot Word
+    </label>
 
-      <div class="option">
-        <label>
-          <input type="checkbox" id="optComputerMode" checked>
-          Computer Mode
-        </label>
-      </div>
+    <label class="option">
+      <input type="checkbox" id="optComputerMode" checked>
+      Computer Mode
+    </label>
 
-      <!-- Start / Finish (항상 활성) -->
-      <div class="controls">
-        <button id="btnStart">Start Game</button>
-        <button id="btnFinish">Finish Game</button>
-      </div>
-    </fieldset>
-  </div>
+    <div class="controls">
+      <button id="btnStart">Start Game</button>
+      <button id="btnFinish">Finish Game</button>
+    </div>
+  </fieldset>
 
-  <!-- =====================
-       Right : Ingame
-  ====================== -->
-  <div class="right">
-    <fieldset id="ingameArea" class="disabled">
-      <legend>Ingame</legend>
+  <!-- ================= Ingame ================= -->
+  <fieldset id="ingameArea" class="disabled">
+    <legend>Ingame</legend>
 
-      <div class="section">
-        <div class="section-title">Input</div>
-        <div class="input-row">
-          <input
-            type="text"
-            id="wordInput"
-            placeholder="Type a word and press Enter"
-            autocomplete="off"
-            disabled
-          />
-          <button id="btnHint" disabled>Hint</button>
-        </div>
-      </div>
+    <div class="input-row">
+      <input
+        type="text"
+        id="wordInput"
+        placeholder="Enter word"
+        disabled
+      />
+      <button id="btnHint" disabled>Hint</button>
+    </div>
 
-      <div class="section">
-        <div class="section-title">Status</div>
-        <div id="statusText"></div>
-      </div>
+    <strong>Status</strong>
+    <div id="statusText" class="box"></div>
 
-      <div class="section">
-        <div class="section-title">History</div>
-        <div id="historyText"></div>
-      </div>
-
-    </fieldset>
-  </div>
+    <strong>History</strong>
+    <div id="historyText" class="box"></div>
+  </fieldset>
 
 </div>
+
+<!-- ⚠️ 반드시 body 맨 아래 -->
+<script src="game.js"></script>
 
 </body>
 </html>
