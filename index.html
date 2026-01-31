@@ -3,56 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <title>GD Word Chain</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    fieldset {
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 5px;
+    }
+
+    button {
+      margin-right: 5px;
+    }
+
+    .box {
+      border: 1px solid #aaa;
+      padding: 6px;
+      margin-top: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+
+    #text1 {
+      font-weight: bold;
+      min-height: 1.5em;
+    }
+
+    #text2 {
+      margin-top: 5px;
+    }
+
+    .disabled {
+      opacity: 0.5;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- 옵션 영역 -->
-  <fieldset id="options">
-    <legend>Options</legend>
+<h2>GD Word Chain</h2>
 
-    <label>
-      <input type="checkbox" id="optPlatformer" checked>
-      Include Platformer
-    </label><br>
+<!-- ================= OPTIONS ================= -->
+<fieldset id="options">
+  <legend>Options</legend>
 
-    <label>
-      <input type="checkbox" id="optNumEdge" checked>
-      Allow Numbers at Start/End
-    </label><br>
+  <label>
+    <input type="checkbox" id="optPlatformer" checked>
+    Include Platformer
+  </label><br>
 
-    <label id="optIgnoreWrap" style="opacity:0.5">
-      <input type="checkbox" id="optNumIgnore" checked>
-      Ignore Trailing Numbers
-    </label><br>
+  <label>
+    <input type="checkbox" id="optNumEdge" checked>
+    Allow Numbers at Start / End
+  </label><br>
 
-    <label>
-      <input type="checkbox" id="optNoOneShot" checked>
-      No One-Shot Words
-    </label><br>
+  <label id="optIgnoreWrap" class="disabled">
+    <input type="checkbox" id="optNumIgnore" checked>
+    Ignore Trailing Numbers
+  </label><br>
 
-    <label>
-      <input type="checkbox" id="optAI">
-      AI Mode
-    </label>
-  </fieldset>
+  <label>
+    <input type="checkbox" id="optNoOneShot" checked>
+    Disallow One-Shot Words
+  </label><br>
 
-  <br>
+  <label>
+    <input type="checkbox" id="optAI">
+    AI Mode
+  </label>
+</fieldset>
 
-  <!-- 버튼 -->
-  <button id="startBtn">Game Start</button>
-  <button id="endBtn" disabled>Game End</button>
+<!-- ================= DICTIONARY 1 ================= -->
+<h3>Dictionary (Prefix Search)</h3>
+<input type="text" id="dictInput" placeholder="Type prefix...">
+<div id="dictResult" class="box"></div>
 
-  <br><br>
+<!-- ================= DICTIONARY 2 ================= -->
+<h3>One-Shot Words (Yes-Num Only)</h3>
+<button id="oneshotBtn">Generate One-Shot List</button>
+<div id="oneshotResult" class="box"></div>
 
-  <!-- 입력 -->
-  <input id="wordInput" placeholder="Enter level name" disabled>
+<hr>
 
-  <br><br>
+<!-- ================= GAME CONTROL ================= -->
+<button id="startBtn">Game Start</button>
+<button id="endBtn" disabled>Game End</button>
 
-  <!-- 출력 -->
-  <pre id="text1"></pre>
-  <pre id="text2"></pre>
+<br><br>
 
-  <script src="game.js"></script>
+<input type="text" id="wordInput" placeholder="Enter level name" disabled>
+
+<!-- ================= GAME OUTPUT ================= -->
+<h3>Status</h3>
+<div id="text1"></div>
+
+<h3>History</h3>
+<div id="text2" class="box"></div>
+
+<script src="game.js"></script>
 </body>
 </html>
