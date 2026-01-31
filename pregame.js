@@ -3,48 +3,50 @@
 ========================= */
 
 /*
-  전제:
-  전역에 다음 DB들이 로딩되어 있음
-  - CLASSIC_NO
-  - CLASSIC_YES
-  - PLATFORMER_NO
-  - PLATFORMER_YES
+  main.js 에서 아래 형태로 호출됨
+
+  initPreGame({
+    onStartGame,
+    absoluteOneShotList
+  });
 */
 
 // =========================
 // DOM
 // =========================
 
-const optionsArea     = document.getElementById("optionsArea");
-const dictionaryArea  = document.getElementById("dictionaryArea");
-const oneShotArea     = document.getElementById("oneShotArea");
-const gameControlArea = document.getElementById("gameControlArea");
+// Areas
+const optionsArea    = document.getElementById("optionsArea");
+const dictionaryArea = document.getElementById("dictionaryArea");
+const oneShotArea    = document.getElementById("oneShotArea");
 
-const btnStart  = document.getElementById("btnStart");
-const btnFinish = document.getElementById("btnFinish");
+// Buttons
+const btnStart       = document.getElementById("btnStart");
+const btnFinish      = document.getElementById("btnFinish");
 
-const optPlatformer = document.getElementById("optPlatformer");
-const optStartEnd   = document.getElementById("optStartEndNum");
-const optIgnoreNum  = document.getElementById("optIgnoreTrailingNum");
-const optIgnoreWrap = document.getElementById("optIgnoreWrapper");
-const optOneShot    = document.getElementById("optAllowOneShot");
-const optComputer   = document.getElementById("optComputerMode");
+// Options
+const optPlatformer  = document.getElementById("optPlatformer");
+const optStartEnd    = document.getElementById("optStartEndNum");
+const optIgnoreNum   = document.getElementById("optIgnoreTrailingNum");
+const optIgnoreWrap  = document.getElementById("optIgnoreWrapper");
+const optOneShot     = document.getElementById("optAllowOneShot");
+const optComputer    = document.getElementById("optComputerMode");
 
 // Dictionary
-const dictPrefixRadio = document.getElementById("dictPrefix");
-const dictSuffixRadio = document.getElementById("dictSuffix");
-const dictSearchInput = document.getElementById("dictSearch");
-const dictResultBox   = document.getElementById("dictResult");
+const dictPrefix     = document.getElementById("dictPrefix");
+const dictSuffix     = document.getElementById("dictSuffix");
+const dictSearch     = document.getElementById("dictSearch");
+const dictResult     = document.getElementById("dictResult");
 
 // One-Shot
-const btnFindOneShot  = document.getElementById("btnFindOneShot");
-const oneShotResult   = document.getElementById("oneShotResult");
+const btnFindOneShot = document.getElementById("btnFindOneShot");
+const oneShotResult  = document.getElementById("oneShotResult");
 
 // =========================
-// Databases (Fixed Scope)
+// Fixed Dictionary DB
+// (옵션과 무관, 항상 전체)
 // =========================
 
-// 사전은 옵션과 무관하게 항상 전체
 const DICTIONARY_DB = [
   ...window.CLASSIC_NO,
   ...window.CLASSIC_YES,
@@ -52,46 +54,21 @@ const DICTIONARY_DB = [
   ...window.PLATFORMER_YES
 ];
 
-// yes_num 전체 풀 (무조건 한방 계산용)
-const YES_NUM_POOL = [
-  ...window.CLASSIC_YES,
-  ...window.PLATFORMER_YES
-];
-
 // =========================
-// Absolute One-Shot List
+// Public API
 // =========================
 
-export const ABSOLUTE_ONE_SHOT_LIST = buildAbsoluteOneShotList();
+export function initPreGame(config) {
+  const { onStartGame, absoluteOneShotList } = config;
 
-function buildAbsoluteOneShotList() {
-  const result = [];
+  // UI 초기 상태
+  enablePreGameUI();
+  applyOptionDependency();
 
-  for (const word of YES_NUM_POOL) {
-    // 맨 뒤가 5 / 6 / 7
-    if (!["5", "6", "7"].includes(word.last)) continue;
+  // Finish Game은 PRE 상태에서 항상 비활성
+  btnFinish.disabled = true;
 
-    // 이을 수 있는 단어가 존재하는지
-    const canChain = YES_NUM_POOL.some(other =>
-      other.lower !== word.lower &&
-      other.first === word.last
-    );
-
-    if (!canChain) {
-      result.push(word);
-    }
-  }
-
-  return result;
-}
-
-// =========================
-// Init Pre-Game
-// =========================
-
-export function initPreGame(onStartGame) {
-  enterPreGameUI();
-  applyOptionConstraint();
+  /* ---------- Event Bind ---------- */
 
   // Start Game
   btnStart.onclick = () => {
@@ -99,29 +76,24 @@ export function initPreGame(onStartGame) {
     onStartGame(options);
   };
 
-  // Finish Game (PRE 상태에서는 비활성)
-  btnFinish.disabled = true;
+  // 옵션 종속 (2번 → 3번)
+  optStartEnd.onchange = applyOptionDependency;
 
-  // Option dependency
-  optStartEnd.addEventListener("change", applyOptionConstraint);
+  // Dictionary 검색
+  dictSearch.oninput = () => {
+    handleDictionarySearch();
+  };
 
-  // Dictionary search
-  dictSearchInput.addEventListener("input", handleDictionarySearch);
-
-  // One-shot finder
-  btnFindOneShot.onclick = showAbsoluteOneShotWords;
+  // One-Shot Find
+  btnFindOneShot.onclick = () => {
+    oneShotResult.textContent = absoluteOneShotList
+      .map(w => w.original)
+      .join("\n");
+  };
 }
 
-// =========================
-// UI State Control
-// =========================
-
 export function enterPreGameUI() {
-  optionsArea.classList.remove("disabled");
-  dictionaryArea.classList.remove("disabled");
-  oneShotArea.classList.remove("disabled");
-
-  btnFinish.disabled = true;
+  enablePreGameUI();
 }
 
 export function disablePreGameUI() {
@@ -131,10 +103,21 @@ export function disablePreGameUI() {
 }
 
 // =========================
+// UI Control
+// =========================
+
+function enablePreGameUI() {
+  optionsArea.classList.remove("disabled");
+  dictionaryArea.classList.remove("disabled");
+  oneShotArea.classList.remove("disabled");
+}
+
+// =========================
 // Options
 // =========================
 
-function applyOptionConstraint() {
+function applyOptionDependency() {
+  // 2번 설정이 꺼지면 3번 설정은 강제 비활성
   if (!optStartEnd.checked) {
     optIgnoreNum.checked = false;
     optIgnoreNum.disabled = true;
@@ -160,13 +143,13 @@ function readOptions() {
 // =========================
 
 function handleDictionarySearch() {
-  const keyword = dictSearchInput.value.trim().toLowerCase();
+  const keyword = dictSearch.value.trim().toLowerCase();
   if (!keyword) {
-    dictResultBox.textContent = "";
+    dictResult.textContent = "";
     return;
   }
 
-  const isPrefix = dictPrefixRadio.checked;
+  const isPrefix = dictPrefix.checked;
 
   const results = DICTIONARY_DB.filter(word => {
     return isPrefix
@@ -174,17 +157,7 @@ function handleDictionarySearch() {
       : word.lower.endsWith(keyword);
   });
 
-  dictResultBox.textContent = results
-    .map(w => w.original)
-    .join("\n");
-}
-
-// =========================
-// One-Shot Display
-// =========================
-
-function showAbsoluteOneShotWords() {
-  oneShotResult.textContent = ABSOLUTE_ONE_SHOT_LIST
+  dictResult.textContent = results
     .map(w => w.original)
     .join("\n");
 }
