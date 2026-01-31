@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GD Word Chain</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f7f7f7;
+    }
 
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    fieldset {
+      max-width: 420px;
+      padding: 16px;
+      border: 2px solid #444;
+      background: #fff;
+      margin-bottom: 16px;
+    }
+
+    legend {
+      font-weight: bold;
+      padding: 0 8px;
+    }
+
+    .option {
+      margin: 8px 0;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .controls button {
+      margin-right: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+
+    #gameArea {
+      max-width: 420px;
+      padding: 16px;
+      border: 2px solid #444;
+      background: #fff;
+    }
+
+    .section {
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    #wordInput {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #statusText,
+    #historyText {
+      min-height: 20px;
+      padding: 4px;
+      background: #f0f0f0;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>GD Word Chain</h1>
+
+  <!-- =====================
+       Options
+  ====================== -->
+  <fieldset id="options">
+    <legend>Options</legend>
+
+    <div class="option">
+      <label>
+        <input type="checkbox" id="optPlatformer" checked>
+        Platformer
+      </label>
+    </div>
+
+    <div class="option">
+      <label>
+        <input type="checkbox" id="optStartEndNum" checked>
+        Start / End Num
+      </label>
+    </div>
+
+    <div class="option">
+      <label>
+        <input type="checkbox" id="optIgnoreTrailingNum">
+        Ignore Trailing Num
+      </label>
+    </div>
+
+    <div class="option">
+      <label>
+        <input type="checkbox" id="optAllowOneShot">
+        Allow One-Shot Word
+      </label>
+    </div>
+
+    <div class="option">
+      <label>
+        <input type="checkbox" id="optComputerMode">
+        Computer Mode
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- =====================
+       Start / Finish
+  ====================== -->
+  <div class="controls">
+    <button id="btnStart">Start Game</button>
+    <button id="btnFinish">Finish Game</button>
+  </div>
+
+  <!-- =====================
+       In-Game Area
+  ====================== -->
+  <div id="gameArea">
+
+    <div class="section">
+      <div class="section-title">Input</div>
+      <input
+        type="text"
+        id="wordInput"
+        placeholder="Type a word and press Enter"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="section">
+      <div class="section-title">Status</div>
+      <div id="statusText"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">History</div>
+      <div id="historyText"></div>
+    </div>
+
+  </div>
+
+</body>
+</html>
