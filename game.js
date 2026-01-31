@@ -1,220 +1,234 @@
-/* ===================== DOM ===================== */
+/* =========================
+   전역 상태
+========================= */
 
-const startBtn = document.getElementById("startBtn");
-const endBtn = document.getElementById("endBtn");
-const wordInput = document.getElementById("wordInput");
-const text1 = document.getElementById("text1");
-const text2 = document.getElementById("text2");
-const dictionaryBox = document.getElementById("dictionaryBox");
+let option = {
+  usePlatformer: true,
+  useYesNum: true,
+  ignoreNumber: false,
+  noOneShot: false,
+  mode: "solo" // "solo" | "computer"
+};
 
-const optPlatformer = document.getElementById("optPlatformer");
-const optNumEdge = document.getElementById("optNumEdge");
-const optNumIgnore = document.getElementById("optNumIgnore");
-const optNoOneShot = document.getElementById("optNoOneShot");
-const optAI = document.getElementById("optAI");
-
-/* ===================== STATE ===================== */
-
-let state = "IDLE"; // IDLE | PLAYING
-let turn = "PLAYER";
-
-let gameDB = [];
+let inGameDB = null;
 let used = new Set();
 let history = [];
-let lastChar = null;
+let expectedChar = null;
+let turn = "player"; // computer mode용
 
-/* ===================== UTIL ===================== */
+/* =========================
+   DOM
+========================= */
 
-function status(msg) {
-  text1.textContent = msg;
-}
+const inputEl = document.getElementById("wordInput");
+const statusEl = document.getElementById("status");
+const historyEl = document.getElementById("history");
 
-function updateHistory() {
-  text2.textContent = history.join(" → ");
-}
+/* =========================
+   DB 로딩
+========================= */
 
-function resetGame() {
-  used.clear();
-  history = [];
-  lastChar = null;
-  turn = "PLAYER";
-  wordInput.value = "";
-  updateHistory();
-}
-
-/* ===================== OPTIONS ===================== */
-
-function getOptions() {
-  return {
-    platformer: optPlatformer.checked,
-    numEdge: optNumEdge.checked,
-    ignoreTrailing: optNumIgnore.checked,
-    noOneShot: optNoOneShot.checked,
-    computer: optAI.checked
+async function loadDB() {
+  const db = {
+    classic_yes: await fetch("data/db/classic_yes_num.json").then(r => r.json()),
+    classic_no: await fetch("data/db/classic_no_num.json").then(r => r.json()),
+    platformer_yes: await fetch("data/db/platformer_yes_num.json").then(r => r.json()),
+    platformer_no: await fetch("data/db/platformer_no_num.json").then(r => r.json())
   };
+  return db;
 }
 
-/* ===================== DB LOAD ===================== */
+/* =========================
+   인게임 DB 생성
+========================= */
 
-async function loadGameDB() {
-  const opt = getOptions();
-  const files = [];
+function buildInGameDB(allDB) {
+  const list = [];
+  const byFirst = {};
+  const byLower = {};
 
-  files.push("data/db/classic_no_num.json");
-  if (opt.numEdge) files.push("data/db/classic_yes_num.json");
-
-  if (opt.platformer) {
-    files.push("data/db/platformer_no_num.json");
-    if (opt.numEdge) files.push("data/db/platformer_yes_num.json");
-  }
-
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
-  gameDB = lists.flat();
-}
-
-/* ===================== RULES ===================== */
-
-function nextChar(entry, opt) {
-  if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
-    return entry.lastAlpha;
-  }
-  return entry.last;
-}
-
-function hasContinuation(char, usedSet) {
-  return gameDB.some(e => !usedSet.has(e.key) && e.first === char);
-}
-
-function playableWords(char, usedSet, opt) {
-  return gameDB.filter(e => {
-    if (usedSet.has(e.key)) return false;
-    if (e.first !== char) return false;
-
-    if (opt.noOneShot) {
-      const nc = nextChar(e, opt);
-      return hasContinuation(nc, usedSet);
+  function pushWords(words) {
+    for (const w of words) {
+      list.push(w);
+      byLower[w.lower] = w;
+      if (!byFirst[w.first]) byFirst[w.first] = [];
+      byFirst[w.first].push(w);
     }
-    return true;
-  });
+  }
+
+  if (option.useYesNum) {
+    pushWords(allDB.classic_yes.list);
+    if (option.usePlatformer) pushWords(allDB.platformer_yes.list);
+  } else {
+    pushWords(allDB.classic_no.list);
+    if (option.usePlatformer) pushWords(allDB.platformer_no.list);
+  }
+
+  return { list, byFirst, byLower };
 }
 
-function checkLose(playerName) {
-  if (!lastChar) return false;
+/* =========================
+   유틸
+========================= */
 
-  const opt = getOptions();
-  const moves = playableWords(lastChar, used, opt);
-  if (moves.length === 0) {
-    status(`❌ ${playerName} loses`);
-    state = "IDLE";
-    wordInput.disabled = true;
-    return true;
-  }
-  return false;
+function getNextChar(word) {
+  if (!option.useYesNum) return word.last;
+  if (!option.ignoreNumber) return word.last;
+  return word.last_alpha;
 }
 
-/* ===================== PLAYER ===================== */
+function isAbsoluteOneShot(word) {
+  return /[567]$/.test(word.last);
+}
 
-function playerSubmit() {
-  if (state !== "PLAYING" || turn !== "PLAYER") return;
+function isOneShot(word) {
+  if (isAbsoluteOneShot(word)) return true;
 
-  if (checkLose("Player")) return;
+  const next = getNextChar(word);
+  if (!next) return true;
 
-  const input = wordInput.value.trim().toLowerCase();
-  if (!input) return;
-
-  const entry = gameDB.find(e => e.key === input);
-
-  if (lastChar && (!entry || entry.first !== lastChar)) {
-    status(`❌ Must start with '${lastChar}'`);
-    return;
+  const candidates = inGameDB.byFirst[next] || [];
+  for (const w of candidates) {
+    if (!used.has(w.original) && w.original !== word.original) {
+      return false;
+    }
   }
+  return true;
+}
 
-  if (!entry) {
-    status("❌ Not in DB");
-    return;
-  }
+/* =========================
+   입력 검증
+========================= */
 
-  if (used.has(entry.key)) {
-    status("❌ Already used");
-    return;
-  }
+const ERROR = {
+  WRONG_START: "WRONG_START",
+  NOT_IN_DB: "NOT_IN_DB",
+  ALREADY_USED: "ALREADY_USED",
+  ONE_SHOT: "ONE_SHOT"
+};
 
-  const opt = getOptions();
-  const nc = nextChar(entry, opt);
+function validateInput(inputLower) {
+  if (inputLower[0] !== expectedChar) return ERROR.WRONG_START;
 
-  if (opt.noOneShot && !hasContinuation(nc, used)) {
-    status("❌ One-shot word");
-    return;
-  }
+  const word = inGameDB.byLower[inputLower];
+  if (!word) return ERROR.NOT_IN_DB;
 
-  used.add(entry.key);
-  history.push(entry.original);
-  lastChar = nc;
-  wordInput.value = "";
+  if (used.has(word.original)) return ERROR.ALREADY_USED;
 
-  status(`⭕ Player: ${entry.original}`);
-  updateHistory();
+  if (option.noOneShot && isOneShot(word)) return ERROR.ONE_SHOT;
 
-  if (opt.computer) {
-    turn = "COMPUTER";
-    setTimeout(computerTurn, 300);
+  return null;
+}
+
+function getErrorMessage(error) {
+  switch (error) {
+    case ERROR.WRONG_START:
+      return `Start는 '${expectedChar}'로 시작해야 합니다.`;
+    case ERROR.NOT_IN_DB:
+      return "데이터베이스에 없는 단어입니다.";
+    case ERROR.ALREADY_USED:
+      return "이미 사용한 단어입니다.";
+    case ERROR.ONE_SHOT:
+      return "현재 상황에서 한방단어입니다.";
+    default:
+      return "";
   }
 }
 
-/* ===================== COMPUTER ===================== */
+/* =========================
+   게임 진행
+========================= */
+
+function applyWord(word) {
+  used.add(word.original);
+  history.push(word.original);
+  expectedChar = getNextChar(word);
+  render();
+}
+
+function render() {
+  historyEl.textContent = history.join(" → ");
+  statusEl.textContent = `Start: '${expectedChar}'`;
+}
+
+/* =========================
+   플레이어 입력
+========================= */
+
+function submitInput() {
+  if (!expectedChar) return;
+
+  const raw = inputEl.value.trim();
+  if (!raw) return;
+
+  const lower = raw.toLowerCase();
+  const error = validateInput(lower);
+
+  if (error) {
+    statusEl.textContent = getErrorMessage(error);
+    if (option.mode === "solo") {
+      statusEl.textContent += " 💀 Game Over";
+    }
+    return;
+  }
+
+  const word = inGameDB.byLower[lower];
+  applyWord(word);
+  inputEl.value = "";
+
+  if (option.mode === "computer") {
+    turn = "computer";
+    setTimeout(computerTurn, 500);
+  }
+}
+
+/* =========================
+   컴퓨터 턴
+========================= */
 
 function computerTurn() {
-  if (state !== "PLAYING") return;
+  const candidates = inGameDB.byFirst[expectedChar] || [];
+  const usable = candidates.filter(
+    w => !used.has(w.original)
+  );
 
-  if (checkLose("Computer")) return;
+  if (usable.length === 0) {
+    statusEl.textContent = "컴퓨터가 낼 단어가 없습니다. 당신의 승리!";
+    return;
+  }
 
-  const opt = getOptions();
-  const moves = playableWords(lastChar, used, opt);
-  const pick = moves[Math.floor(Math.random() * moves.length)];
+  let choice = usable;
+  if (option.noOneShot) {
+    choice = usable.filter(w => !isOneShot(w));
+    if (choice.length === 0) choice = usable;
+  }
 
-  used.add(pick.key);
-  history.push(pick.original);
-  lastChar = nextChar(pick, opt);
-
-  status(`⭕ Computer: ${pick.original}`);
-  updateHistory();
-
-  turn = "PLAYER";
+  const word = choice[Math.floor(Math.random() * choice.length)];
+  applyWord(word);
+  turn = "player";
 }
 
-/* ===================== EVENTS ===================== */
+/* =========================
+   초기화
+========================= */
 
-startBtn.onclick = async () => {
-  if (state === "IDLE") {
-    await loadGameDB();
-    resetGame();
-    dictionaryBox.classList.add("hidden");
-    wordInput.disabled = false;
-    state = "PLAYING";
-    startBtn.textContent = "Game Reset";
-    status("Game Started");
-  } else {
-    resetGame();
-    status("Game Reset");
-  }
-};
+async function startGame(startChar, opt) {
+  option = opt;
+  used.clear();
+  history = [];
+  expectedChar = startChar.toLowerCase();
+  turn = "player";
 
-endBtn.onclick = () => {
-  state = "IDLE";
-  resetGame();
-  dictionaryBox.classList.remove("hidden");
-  wordInput.disabled = true;
-  startBtn.textContent = "Game Start";
-  status("");
-};
+  const allDB = await loadDB();
+  inGameDB = buildInGameDB(allDB);
 
-wordInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") playerSubmit();
-});
+  render();
+}
 
-/* ===================== INIT ===================== */
+/* =========================
+   Enter 키
+========================= */
 
-optNumIgnore.disabled = !optNumEdge.checked;
-optNumEdge.addEventListener("change", () => {
-  optNumIgnore.disabled = !optNumEdge.checked;
+inputEl.addEventListener("keydown", e => {
+  if (e.key === "Enter") submitInput();
 });
