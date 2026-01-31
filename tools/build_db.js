@@ -1,98 +1,135 @@
-// tools/build_db.js
-
 const fs = require("fs");
 const path = require("path");
 
+/* =========================
+   경로
+========================= */
+
 const RAW_DIR = path.join(__dirname, "../data/raw");
-const DB_DIR  = path.join(__dirname, "../data/db");
+const DB_DIR = path.join(__dirname, "../data/db");
+
+/* =========================
+   유틸
+========================= */
+
+// 괄호 제거
+function removeParen(str) {
+  return str.replace(/\s*\([^)]*\)\s*/g, "").trim();
+}
+
+// 맨 앞 / 뒤가 영문자 or 숫자인지
+function isValidEdge(str) {
+  return /^[a-z0-9].*[a-z0-9]$/i.test(str);
+}
+
+// 맨 앞 글자 (소문자)
+function getFirst(str) {
+  return str[0].toLowerCase();
+}
+
+// 맨 뒤 글자 (소문자, 숫자 가능)
+function getLast(str) {
+  return str[str.length - 1].toLowerCase();
+}
+
+// 맨 뒤 알파벳
+function getLastAlpha(str) {
+  for (let i = str.length - 1; i >= 0; i--) {
+    const c = str[i].toLowerCase();
+    if (c >= "a" && c <= "z") return c;
+  }
+  return null;
+}
+
+/* =========================
+   raw → list
+========================= */
+
+function buildList(rawText) {
+  const seen = new Set();
+  const list = [];
+
+  const lines = rawText.split(/\r?\n/);
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    const original = removeParen(line);
+    if (!original) continue;
+    if (!isValidEdge(original)) continue;
+
+    const lower = original.toLowerCase();
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+
+    const first = getFirst(original);
+    const last = getLast(original);
+    const last_alpha = getLastAlpha(original);
+
+    if (!first || !last_alpha) continue;
+
+    list.push({
+      original,
+      lower,
+      first,
+      last,
+      last_alpha
+    });
+  }
+
+  return list;
+}
+
+/* =========================
+   yes / no num 분리
+========================= */
+
+function splitYesNoNum(list) {
+  const yes = [];
+  const no = [];
+
+  for (const w of list) {
+    if (/[0-9]$/.test(w.original)) yes.push(w);
+    else no.push(w);
+  }
+
+  return { yes, no };
+}
+
+/* =========================
+   메인 처리
+========================= */
+
+function processFile(name) {
+  const rawPath = path.join(RAW_DIR, `${name}_raw.txt`);
+  const rawText = fs.readFileSync(rawPath, "utf-8");
+
+  const baseList = buildList(rawText);
+  const { yes, no } = splitYesNoNum(baseList);
+
+  fs.writeFileSync(
+    path.join(DB_DIR, `${name}_yes_num.json`),
+    JSON.stringify({ list: yes }, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(DB_DIR, `${name}_no_num.json`),
+    JSON.stringify({ list: no }, null, 2)
+  );
+
+  console.log(
+    `✔ ${name}: yes=${yes.length}, no=${no.length}`
+  );
+}
+
+/* =========================
+   실행
+========================= */
 
 if (!fs.existsSync(DB_DIR)) {
   fs.mkdirSync(DB_DIR, { recursive: true });
 }
 
-// ---------- 유틸 ----------
-
-// 줄 끝 괄호 제거
-function removeParen(str) {
-  return str.replace(/\s*\([^)]*\)$/, "").trim();
-}
-
-// 앞뒤 영숫자 검사
-function isValidEdge(str) {
-  return /^[A-Za-z0-9].*[A-Za-z0-9]$/.test(str);
-}
-
-// 앞 또는 뒤 숫자 존재 여부
-function hasEdgeNumber(str) {
-  return /^[0-9]/.test(str) || /[0-9]$/.test(str);
-}
-
-// 마지막 알파벳 추출 (lower 기준)
-function getLastAlpha(lower) {
-  for (let i = lower.length - 1; i >= 0; i--) {
-    const c = lower[i];
-    if (/[a-z]/.test(c)) return c;
-  }
-  return null;
-}
-
-// ---------- 핵심 처리 ----------
-
-function build(rawFileName, prefix) {
-  const rawPath = path.join(RAW_DIR, rawFileName);
-  const lines = fs.readFileSync(rawPath, "utf-8").split(/\r?\n/);
-
-  const seen = new Set();
-  const yesNum = [];
-  const noNum = [];
-
-  for (let line of lines) {
-    if (!line) continue;
-
-    const cleaned = removeParen(line);
-    if (!cleaned) continue;
-    if (!isValidEdge(cleaned)) continue;
-    if (seen.has(cleaned)) continue;
-
-    seen.add(cleaned);
-
-    const lower = cleaned.toLowerCase();
-    const first = lower[0];
-    const last  = lower[lower.length - 1];
-
-    const base = {
-      original: cleaned,
-      lower,
-      first,
-      last
-    };
-
-    if (hasEdgeNumber(cleaned)) {
-      yesNum.push({
-        ...base,
-        last_alpha: getLastAlpha(lower)
-      });
-    } else {
-      noNum.push(base);
-    }
-  }
-
-  fs.writeFileSync(
-    path.join(DB_DIR, `${prefix}_yes_num.json`),
-    JSON.stringify({ list: yesNum }, null, 2),
-    "utf-8"
-  );
-
-  fs.writeFileSync(
-    path.join(DB_DIR, `${prefix}_no_num.json`),
-    JSON.stringify({ list: noNum }, null, 2),
-    "utf-8"
-  );
-
-  console.log(`✔ ${prefix}: yes=${yesNum.length}, no=${noNum.length}`);
-}
-
-// ---------- 실행 ----------
-
-build("classic_raw.txt", "classic");
-build("platformer_raw.txt", "platformer");
+processFile("classic");
+processFile("platformer");
