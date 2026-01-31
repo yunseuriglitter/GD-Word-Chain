@@ -2,14 +2,17 @@
    GLOBAL STATE
 ========================================================= */
 
-let state = "IDLE";        // IDLE | PLAYING | ENDED
-let turn = "PLAYER";       // PLAYER | AI
+let state = "IDLE"; // IDLE | PLAYING | ENDED
+let turn = "PLAYER"; // PLAYER | AI
 
 let gameDB = [];
 let allDB = [];
 let used = new Set();
 let history = [];
 let lastChar = null;
+
+let countPlayer = 0;
+let countAI = 0;
 
 /* =========================================================
    DOM
@@ -69,6 +72,10 @@ function resetGame() {
   history = [];
   lastChar = null;
   turn = "PLAYER";
+
+  countPlayer = 0;
+  countAI = 0;
+
   text1.textContent = "";
   text2.textContent = "";
   wordInput.value = "";
@@ -103,7 +110,7 @@ syncOptions();
    DB LOADERS
 ========================================================= */
 
-// 전체 사전 (옵션 무시)
+// 전체 DB (사전 전용)
 async function loadAllDB() {
   if (allDB.length) return;
 
@@ -118,7 +125,7 @@ async function loadAllDB() {
   allDB = lists.flat();
 }
 
-// 게임용 DB (옵션 반영)
+// 게임 DB (옵션 반영)
 async function loadGameDB() {
   const opt = getOptions();
   const files = [];
@@ -135,16 +142,6 @@ async function loadGameDB() {
   gameDB = lists.flat();
 }
 
-// one-shot 사전용 (yes_num only)
-async function loadOneShotDB() {
-  const files = ["data/db/classic_yes_num.json"];
-  if (optPlatformer.checked) {
-    files.push("data/db/platformer_yes_num.json");
-  }
-  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
-  return lists.flat();
-}
-
 /* =========================================================
    CORE RULE FUNCTIONS
 ========================================================= */
@@ -157,7 +154,18 @@ function getNextChar(entry, opt) {
 }
 
 function hasNextWord(char) {
-  return gameDB.some(e => !used.has(e.key) && e.first === char);
+  return gameDB.some(e =>
+    !used.has(e.key) &&
+    e.first === char
+  );
+}
+
+function hasNonOneShot(char, opt) {
+  return gameDB.some(e =>
+    !used.has(e.key) &&
+    e.first === char &&
+    hasNextWord(getNextChar(e, opt))
+  );
 }
 
 /* =========================================================
@@ -169,13 +177,26 @@ function accept(entry, who) {
   history.push(entry.original);
   lastChar = getNextChar(entry, getOptions());
 
-  logStatus(`⭕ ${who}: ${entry.original}`);
+  if (who === "Player") countPlayer++;
+  if (who === "AI") countAI++;
+
+  const opt = getOptions();
+  const countText = opt.aiMode
+    ? `(P:${countPlayer} / AI:${countAI})`
+    : `(P:${countPlayer})`;
+
+  logStatus(`⭕ ${who}: ${entry.original} ${countText}`);
   logHistory();
   wordInput.value = "";
 }
 
 function lose(who, reason) {
-  logStatus(`❌ ${who} loses: ${reason}`);
+  const opt = getOptions();
+  const countText = opt.aiMode
+    ? `(P:${countPlayer} / AI:${countAI})`
+    : `(P:${countPlayer})`;
+
+  logStatus(`❌ ${who} loses: ${reason} ${countText}`);
   state = "ENDED";
 }
 
@@ -184,15 +205,10 @@ function lose(who, reason) {
 function onSubmit() {
   if (state !== "PLAYING" || turn !== "PLAYER") return;
 
-  // 🔥 턴 시작 패배 판정 (AI가 한방을 쳤다면)
-  if (lastChar && !hasNextWord(lastChar)) {
-    return lose("Player", "No possible continuation");
-  }
-
   const input = wordInput.value.toLowerCase().trim();
   if (!input) return;
 
-  // 시작 글자 검사 (입력 기준)
+  // 시작 문자 검사 (DB 이전)
   if (lastChar && input[0] !== lastChar) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
@@ -204,9 +220,11 @@ function onSubmit() {
   const opt = getOptions();
   const nextChar = getNextChar(entry, opt);
 
-  // 한방 금지 → 입력 거부
-  if (opt.noOneShot && (!nextChar || !hasNextWord(nextChar))) {
-    return logStatus("❌ One-shot word");
+  // 한방 금지
+  if (opt.noOneShot) {
+    if (!hasNonOneShot(nextChar, opt)) {
+      return lose("Player", "One-shot word");
+    }
   }
 
   accept(entry, "Player");
@@ -222,17 +240,12 @@ function onSubmit() {
 function aiTurn() {
   if (state !== "PLAYING") return;
 
-  // 🔥 턴 시작 패배 판정 (Player가 한방을 쳤다면)
-  if (lastChar && !hasNextWord(lastChar)) {
-    return lose("AI", "No possible continuation");
-  }
-
   const opt = getOptions();
 
   const candidates = gameDB.filter(e =>
     !used.has(e.key) &&
     e.first === lastChar &&
-    (!opt.noOneShot || hasNextWord(getNextChar(e, opt)))
+    (!opt.noOneShot || hasNonOneShot(getNextChar(e, opt), opt))
   );
 
   if (candidates.length === 0) {
@@ -273,7 +286,7 @@ wordInput.addEventListener("keydown", e => {
 });
 
 /* =========================================================
-   DICTIONARY (PREFIX / SUFFIX, ALL DB)
+   DICTIONARY (PREFIX / SUFFIX)
 ========================================================= */
 
 dictInput.addEventListener("input", async () => {
@@ -281,7 +294,6 @@ dictInput.addEventListener("input", async () => {
 
   await loadAllDB();
   const q = dictInput.value.toLowerCase().trim();
-
   if (!q) {
     dictResult.textContent = "";
     return;
@@ -300,23 +312,27 @@ dictInput.addEventListener("input", async () => {
 });
 
 /* =========================================================
-   ONE-SHOT DICTIONARY (ANALYSIS ONLY)
+   ONE-SHOT DICTIONARY (YES_NUM PRE-CALC)
 ========================================================= */
 
 oneshotBtn.onclick = async () => {
   if (state !== "IDLE") return;
 
   oneshotResult.textContent = "Analyzing...";
-  const yesNumDB = await loadOneShotDB();
-  await loadAllDB();
+
+  const files = [
+    "data/db/classic_yes_num.json",
+    "data/db/platformer_yes_num.json"
+  ];
+
+  const lists = await Promise.all(
+    files.map(f => fetch(f).then(r => r.json()))
+  );
+  const yesNumDB = lists.flat();
 
   const oneshots = yesNumDB.filter(e => {
     const c = e.last;
-
-    if (/[0-9]/.test(c)) {
-      return !yesNumDB.some(x => x.key !== e.key && x.first === c);
-    }
-    return !allDB.some(x => x.first === c);
+    return !yesNumDB.some(x => x.first === c);
   }).map(e => e.original);
 
   oneshotResult.textContent =
