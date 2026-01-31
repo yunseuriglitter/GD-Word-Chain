@@ -1,1 +1,40 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GD Word Chain</title>
+</head>
+<body>
 
+  <!-- 옵션 -->
+  <label>
+    <input type="checkbox" id="optPlatformer" checked>
+    Include Platformer
+  </label><br>
+
+  <label>
+    <input type="checkbox" id="optNumEdge" checked>
+    Allow Numbers at Start/End
+  </label><br>
+
+  <label id="optIgnoreWrap" style="opacity:0.5">
+    <input type="checkbox" id="optNumIgnore" checked>
+    Ignore Trailing Numbers
+  </label><br>
+
+  <label>
+    <input type="checkbox" id="optNoOneShot" checked>
+    No One-Shot Words
+  </label><br><br>
+
+  <!-- 입력 -->
+  <input id="wordInput" placeholder="Enter level name">
+  <button onclick="onSubmit()">Submit</button>
+
+  <!-- 로그 -->
+  <pre id="log"></pre>
+
+  <script src="game.js"></script>
+</body>
+</html>
