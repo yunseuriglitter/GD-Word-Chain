@@ -6,33 +6,32 @@ const path = require("path");
 ========================= */
 
 const RAW_DIR = path.join(__dirname, "../data/raw");
-const DB_DIR = path.join(__dirname, "../data/db");
+const DB_DIR  = path.join(__dirname, "../data/db");
 
 /* =========================
-   유틸
+   대표 표기 (예외 처리)
 ========================= */
 
-// 괄호 제거
-function removeParen(str) {
-  return str.replace(/\s*\([^)]*\)\s*/g, "").trim();
+const CANONICAL = {
+  erebus: "Erebus"
+  // 필요하면 여기 계속 추가
+};
+
+/* =========================
+   유틸 함수
+========================= */
+
+// 문자열 끝에 붙은 괄호 제거
+function removeTrailingParen(str) {
+  return str.replace(/\s*\([^()]*\)\s*$/, "").trim();
 }
 
-// 맨 앞 / 뒤가 영문자 or 숫자인지
+// 맨 앞 / 맨 뒤 검사
 function isValidEdge(str) {
-  return /^[a-z0-9].*[a-z0-9]$/i.test(str);
+  return /^[a-zA-Z0-9].*[a-zA-Z0-9]$/.test(str);
 }
 
-// 맨 앞 글자 (소문자)
-function getFirst(str) {
-  return str[0].toLowerCase();
-}
-
-// 맨 뒤 글자 (소문자, 숫자 가능)
-function getLast(str) {
-  return str[str.length - 1].toLowerCase();
-}
-
-// 맨 뒤 알파벳
+// 맨 뒤 알파벳 찾기
 function getLastAlpha(str) {
   for (let i = str.length - 1; i >= 0; i--) {
     const c = str[i].toLowerCase();
@@ -42,7 +41,7 @@ function getLastAlpha(str) {
 }
 
 /* =========================
-   raw → list
+   raw → 정제된 리스트
 ========================= */
 
 function buildList(rawText) {
@@ -55,16 +54,26 @@ function buildList(rawText) {
     line = line.trim();
     if (!line) continue;
 
-    const original = removeParen(line);
-    if (!original) continue;
-    if (!isValidEdge(original)) continue;
+    // 1. 뒤 괄호 제거
+    let cleaned = removeTrailingParen(line);
+    if (!cleaned) continue;
 
-    const lower = original.toLowerCase();
+    // 2. 맨 앞 / 뒤 검사
+    if (!isValidEdge(cleaned)) continue;
+
+    // 3. 소문자 키
+    const lower = cleaned.toLowerCase();
+
+    // 4. 중복 제거 (소문자 기준)
     if (seen.has(lower)) continue;
     seen.add(lower);
 
-    const first = getFirst(original);
-    const last = getLast(original);
+    // 5. 대표 표기 적용
+    const original = CANONICAL[lower] ?? cleaned;
+
+    // 6. 글자 정보
+    const first = original[0].toLowerCase();
+    const last = original[original.length - 1].toLowerCase();
     const last_alpha = getLastAlpha(original);
 
     if (!first || !last_alpha) continue;
@@ -87,7 +96,7 @@ function buildList(rawText) {
 
 function splitYesNoNum(list) {
   const yes = [];
-  const no = [];
+  const no  = [];
 
   for (const w of list) {
     if (/[0-9]$/.test(w.original)) yes.push(w);
@@ -98,7 +107,7 @@ function splitYesNoNum(list) {
 }
 
 /* =========================
-   메인 처리
+   파일 처리
 ========================= */
 
 function processFile(name) {
@@ -118,9 +127,7 @@ function processFile(name) {
     JSON.stringify({ list: no }, null, 2)
   );
 
-  console.log(
-    `✔ ${name}: yes=${yes.length}, no=${no.length}`
-  );
+  console.log(`✔ ${name}: yes=${yes.length}, no=${no.length}`);
 }
 
 /* =========================
