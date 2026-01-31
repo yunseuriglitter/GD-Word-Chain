@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>GD Word Chain</title>
 
+  <link rel="stylesheet" href="style.css">
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,14 +25,15 @@
 
     button {
       margin-right: 6px;
-      padding: 4px 10px;
+      padding: 6px 10px;
+      font-size: 14px;
     }
 
     .box {
       border: 1px solid #aaa;
       padding: 6px;
-      margin-top: 5px;
-      max-height: 200px;
+      margin-top: 6px;
+      max-height: 220px;
       overflow-y: auto;
       white-space: pre-wrap;
       font-size: 14px;
@@ -46,7 +49,8 @@
 
     #text1 {
       font-weight: bold;
-      min-height: 1.5em;
+      min-height: 1.6em;
+      margin-bottom: 6px;
     }
   </style>
 </head>
@@ -54,7 +58,9 @@
 
 <h2>GD Word Chain</h2>
 
-<!-- ================= OPTIONS ================= -->
+<!-- ======================================================
+     GAME OPTIONS (PRE-GAME ONLY)
+====================================================== -->
 <fieldset id="options">
   <legend>Game Options</legend>
 
@@ -68,7 +74,7 @@
     Allow Numbers at Start / End
   </label><br>
 
-  <label id="optIgnoreWrap">
+  <label id="optIgnoreWrap" class="disabled">
     <input type="checkbox" id="optNumIgnore">
     Ignore Trailing Numbers
   </label><br>
@@ -84,7 +90,9 @@
   </label>
 </fieldset>
 
-<!-- ================= DICTIONARY (PRE-GAME ONLY) ================= -->
+<!-- ======================================================
+     DICTIONARY (PRE-GAME ONLY)
+====================================================== -->
 <fieldset id="dictionaryBox">
   <legend>Dictionary (Pre-Game Only)</legend>
 
@@ -92,7 +100,6 @@
     <input type="radio" name="dictMode" id="dictPrefix" checked>
     Prefix Search
   </label>
-
   <label>
     <input type="radio" name="dictMode" id="dictSuffix">
     Suffix Search
@@ -100,12 +107,7 @@
 
   <br><br>
 
-  <input
-    type="text"
-    id="dictInput"
-    placeholder="Search level names..."
-  >
-
+  <input type="text" id="dictInput" placeholder="Type to search...">
   <div id="dictResult" class="box"></div>
 
   <br>
@@ -116,9 +118,11 @@
 
 <hr>
 
-<!-- ================= GAME CONTROL ================= -->
+<!-- ======================================================
+     GAME CONTROL
+====================================================== -->
 <button id="startBtn">Game Start</button>
-<button id="endBtn" disabled>Game End</button>
+<button id="endBtn">Game End</button>
 
 <br><br>
 
@@ -129,15 +133,15 @@
   disabled
 >
 
-<!-- ================= GAME OUTPUT ================= -->
+<!-- ======================================================
+     GAME OUTPUT
+====================================================== -->
 <h3>Status</h3>
 <div id="text1"></div>
 
 <h3>History</h3>
 <div id="text2" class="box"></div>
 
-<!-- ================= SCRIPT ================= -->
 <script src="game.js"></script>
-
 </body>
 </html>
