@@ -16,12 +16,14 @@
     }
 
     input[type="text"] {
-      width: 300px;
-      padding: 5px;
+      width: 320px;
+      padding: 6px;
+      font-size: 14px;
     }
 
     button {
       margin-right: 6px;
+      padding: 4px 10px;
     }
 
     .box {
@@ -38,7 +40,6 @@
       opacity: 0.5;
     }
 
-    /* 게임 중 사전 숨김용 */
     .hidden {
       display: none;
     }
@@ -53,7 +54,7 @@
 
 <h2>GD Word Chain</h2>
 
-<!-- ================= OPTIONS ================= -->
+<!-- ================= GAME OPTIONS ================= -->
 <fieldset id="options">
   <legend>Game Options</legend>
 
@@ -67,8 +68,8 @@
     Allow Numbers at Start / End
   </label><br>
 
-  <label id="optIgnoreWrap" class="disabled">
-    <input type="checkbox" id="optNumIgnore" checked>
+  <label id="optIgnoreWrap">
+    <input type="checkbox" id="optNumIgnore">
     Ignore Trailing Numbers
   </label><br>
 
@@ -78,12 +79,12 @@
   </label><br>
 
   <label>
-    <input type="checkbox" id="optAI">
-    AI Mode
+    <input type="checkbox" id="optAI" checked>
+    Computer Mode
   </label>
 </fieldset>
 
-<!-- ================= DICTIONARY ================= -->
+<!-- ================= DICTIONARY (PRE-GAME ONLY) ================= -->
 <fieldset id="dictionaryBox">
   <legend>Dictionary (Pre-Game Only)</legend>
 
@@ -91,6 +92,7 @@
     <input type="radio" name="dictMode" id="dictPrefix" checked>
     Prefix Search
   </label>
+
   <label>
     <input type="radio" name="dictMode" id="dictSuffix">
     Suffix Search
@@ -98,7 +100,12 @@
 
   <br><br>
 
-  <input type="text" id="dictInput" placeholder="Type to search...">
+  <input
+    type="text"
+    id="dictInput"
+    placeholder="Search level names..."
+  >
+
   <div id="dictResult" class="box"></div>
 
   <br>
@@ -111,11 +118,15 @@
 
 <!-- ================= GAME CONTROL ================= -->
 <button id="startBtn">Game Start</button>
-<button id="endBtn" disabled>Game End</button>
+<button id="endBtn">Game End</button>
 
 <br><br>
 
-<input type="text" id="wordInput" placeholder="Enter level name" disabled>
+<input
+  type="text"
+  id="wordInput"
+  placeholder="Enter level name"
+>
 
 <!-- ================= GAME OUTPUT ================= -->
 <h3>Status</h3>
@@ -124,6 +135,8 @@
 <h3>History</h3>
 <div id="text2" class="box"></div>
 
+<!-- ================= SCRIPT ================= -->
 <script src="game.js"></script>
+
 </body>
 </html>
