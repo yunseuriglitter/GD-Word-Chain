@@ -144,7 +144,6 @@ async function loadGameDB() {
    CORE RULE FUNCTIONS
 ========================================================= */
 
-// 다음 연결 문자
 function getNextChar(entry, opt) {
   if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
     return entry.lastAlpha;
@@ -152,21 +151,35 @@ function getNextChar(entry, opt) {
   return entry.last;
 }
 
-// 1차 판정: 다음 글자로 시작하는 단어가 존재하는가
-function hasAnyNext(char) {
+// c로 시작하는 미사용 단어가 있는가
+function hasAnyNext(c) {
   return gameDB.some(e =>
     !used.has(e.key) &&
-    e.first === char
+    e.first === c
   );
 }
 
-// 2차 판정: 한방이 아닌 선택지가 존재하는가
-function hasNonOneShotNext(char, opt) {
+// c로 시작하는 "한방이 아닌" 선택지가 있는가
+function hasNonOneShotNext(c, opt, excludeKey = null) {
   return gameDB.some(e =>
     !used.has(e.key) &&
-    e.first === char &&
+    e.key !== excludeKey &&
+    e.first === c &&
     hasAnyNext(getNextChar(e, opt))
   );
+}
+
+// 이 단어가 "게임상 한방 단어"인가?
+function isForbiddenOneShot(entry, opt) {
+  const c = getNextChar(entry, opt);
+
+  // 다음 단어 자체가 없음
+  if (!hasAnyNext(c)) return true;
+
+  // 다음 단어는 있으나 전부 한방
+  if (!hasNonOneShotNext(c, opt, entry.key)) return true;
+
+  return false;
 }
 
 /* =========================================================
@@ -209,29 +222,24 @@ function onSubmit() {
   const input = wordInput.value.toLowerCase().trim();
   if (!input) return;
 
-  // 시작 문자 검사
+  // 1. 시작 글자
   if (lastChar && input[0] !== lastChar) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
 
   const entry = gameDB.find(e => e.key === input);
+
+  // 2. DB 존재
   if (!entry) return logStatus("❌ Not in DB");
+
+  // 3. 중복
   if (used.has(entry.key)) return logStatus("❌ Already used");
 
   const opt = getOptions();
-  const nextChar = getNextChar(entry, opt);
 
-  // 1차 한방: 다음 단어 자체가 없음
-  if (!hasAnyNext(nextChar)) {
-    if (opt.noOneShot) {
-      return lose("Player", "One-shot word (no continuation)");
-    }
-    // 한방 허용이면 상대 패배는 다음 턴에서 처리
-  }
-
-  // 2차 한방: 선택지는 있으나 전부 한방
-  if (opt.noOneShot && !hasNonOneShotNext(nextChar, opt)) {
-    return lose("Player", "One-shot word (only one-shots)");
+  // 4. 한방 금지 입력 차단
+  if (opt.noOneShot && isForbiddenOneShot(entry, opt)) {
+    return logStatus("❌ No One-Shot Words Rule");
   }
 
   accept(entry, "Player");
@@ -249,15 +257,21 @@ function aiTurn() {
 
   const opt = getOptions();
 
-  // AI 차례 시작 시 패배 판정
-  if (!hasAnyNext(lastChar)) {
-    return lose("AI", "No possible continuation");
+  // 턴 시작 패배 판정
+  if (opt.noOneShot) {
+    if (!hasNonOneShotNext(lastChar, opt)) {
+      return lose("AI", "No valid move");
+    }
+  } else {
+    if (!hasAnyNext(lastChar)) {
+      return lose("AI", "No possible continuation");
+    }
   }
 
   const candidates = gameDB.filter(e =>
     !used.has(e.key) &&
     e.first === lastChar &&
-    (!opt.noOneShot || hasNonOneShotNext(getNextChar(e, opt), opt))
+    (!opt.noOneShot || !isForbiddenOneShot(e, opt))
   );
 
   if (candidates.length === 0) {
@@ -321,7 +335,7 @@ dictInput.addEventListener("input", async () => {
 
   dictResult.textContent =
     matches.length ? matches.join("\n") : "(no matches)";
-});
+};
 
 /* =========================================================
    ONE-SHOT DICTIONARY (PRE-GAME ONLY)
