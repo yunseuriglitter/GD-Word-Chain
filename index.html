@@ -5,6 +5,7 @@
 <title>GD Word Chain</title>
 
 <style>
+/* ===== Base ===== */
 body {
   font-family: Arial, sans-serif;
   background: #f5f5f5;
@@ -15,6 +16,7 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* ===== Layout ===== */
 .container {
   display: flex;
   gap: 20px;
@@ -33,12 +35,13 @@ legend {
   padding: 0 6px;
 }
 
+/* ===== Disabled ===== */
 .disabled {
   opacity: 0.35;
   pointer-events: none;
 }
 
-/* ===== Left ===== */
+/* ===== Left Panel ===== */
 #leftPanel {
   width: 300px;
 }
@@ -55,15 +58,11 @@ legend {
   gap: 8px;
 }
 
-/* ===== Dictionary ===== */
+/* ===== Dictionary / One-Shot ===== */
 .tabRow {
   display: flex;
-  gap: 6px;
+  gap: 12px;
   margin-bottom: 8px;
-}
-
-.tabRow button {
-  flex: 1;
 }
 
 #dictSearch {
@@ -82,7 +81,7 @@ legend {
   white-space: pre-wrap;
 }
 
-/* ===== Right: Ingame ===== */
+/* ===== Ingame ===== */
 #ingameArea {
   flex: 1;
 }
@@ -167,8 +166,15 @@ legend {
     <legend>Dictionary</legend>
 
     <div class="tabRow">
-      <button id="dictPrefix" class="active">Prefix</button>
-      <button id="dictSuffix">Suffix</button>
+      <label>
+        <input type="radio" name="dictMode" id="dictPrefix" value="prefix" checked>
+        Prefix
+      </label>
+
+      <label>
+        <input type="radio" name="dictMode" id="dictSuffix" value="suffix">
+        Suffix
+      </label>
     </div>
 
     <input
@@ -212,6 +218,8 @@ legend {
 
 </div>
 
+<!-- 반드시 body 맨 아래 -->
 <script src="game.js"></script>
+
 </body>
 </html>
