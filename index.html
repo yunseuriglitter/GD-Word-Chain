@@ -3,204 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <title>GD Word Chain</title>
-
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #111;
-      color: #eee;
-    }
-
-    .container {
-      display: flex;
-      gap: 20px;
-    }
-
-    .panel {
-      border: 1px solid #444;
-      padding: 12px;
-      border-radius: 6px;
-    }
-
-    .panel-title {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .disabled {
-      opacity: 0.35;
-      pointer-events: none;
-    }
-
-    .left {
-      width: 35%;
-    }
-
-    .right {
-      width: 65%;
-    }
-
-    .row {
-      margin-bottom: 6px;
-    }
-
-    .game-control {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    textarea, pre {
-      width: 100%;
-      height: 140px;
-      background: #000;
-      color: #0f0;
-      border: 1px solid #333;
-      padding: 6px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-
-    .inline {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .radio-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    button {
-      cursor: pointer;
-    }
-  </style>
 </head>
 
 <body>
 
   <h1>GD Word Chain</h1>
 
-  <div class="container">
-
-    <!-- =========================
-         LEFT : PRE-GAME
-    ========================== -->
-    <div class="left">
-
-      <!-- OPTIONS -->
-      <div id="optionsArea" class="panel">
-        <div class="panel-title">Options</div>
-
-        <div class="row">
-          <label><input type="checkbox" id="optPlatformer" checked /> Platformer</label>
-        </div>
-
-        <div class="row">
-          <label><input type="checkbox" id="optStartEndNum" checked /> Start / End Num</label>
-        </div>
-
-        <div class="row" id="optIgnoreWrapper">
-          <label><input type="checkbox" id="optIgnoreTrailingNum" /> Ignore Trailing Num</label>
-        </div>
-
-        <div class="row">
-          <label><input type="checkbox" id="optAllowOneShot" /> Allow One-Shot Word</label>
-        </div>
-
-        <div class="row">
-          <label><input type="checkbox" id="optComputerMode" checked /> Computer Mode</label>
-        </div>
-      </div>
-
-      <!-- GAME CONTROL -->
-      <div class="panel">
-        <div class="panel-title">Game Control</div>
-
-        <div class="game-control">
-          <button id="btnStart">Start Game</button>
-          <button id="btnFinish">Finish Game</button>
-        </div>
-      </div>
-
-      <!-- DICTIONARY -->
-      <div id="dictionaryArea" class="panel">
-        <div class="panel-title">Dictionary</div>
-
-        <div class="radio-group">
-          <label><input type="radio" name="dictMode" id="dictPrefix" checked /> Prefix</label>
-          <label><input type="radio" name="dictMode" id="dictSuffix" /> Suffix</label>
-        </div>
-
-        <div class="row">
-          <input type="text" id="dictSearch" placeholder="Search..." />
-        </div>
-
-        <pre id="dictResult"></pre>
-      </div>
-
-      <!-- ONE SHOT -->
-      <div id="oneShotArea" class="panel">
-        <div class="panel-title">One-Shot Word</div>
-
-        <button id="btnFindOneShot">Find</button>
-
-        <pre id="oneShotResult"></pre>
-      </div>
-
-    </div>
-
-    <!-- =========================
-         RIGHT : IN-GAME
-    ========================== -->
-    <div class="right">
-
-      <div id="ingameArea" class="panel disabled">
-        <div class="panel-title">In-Game</div>
-
-        <div class="inline">
-          <input type="text" id="gameInput" placeholder="Enter word..." />
-          <button id="btnHint">Hint</button>
-        </div>
-
-        <div class="row">
-          <strong>Status</strong>
-          <pre id="statusArea"></pre>
-        </div>
-
-        <div class="row">
-          <strong>History</strong>
-          <pre id="historyArea"></pre>
-        </div>
-      </div>
-
-    </div>
-
+  <!-- OPTIONS -->
+  <div id="optionsArea">
+    <label><input type="checkbox" id="optStartEndNum" checked> Start / End Num</label><br>
+    <label><input type="checkbox" id="optIgnoreTrailingNum"> Ignore Trailing Num</label>
   </div>
 
-  <!-- =========================
-       SCRIPTS (ORDER IS CRITICAL)
-  ========================== -->
+  <br>
 
-  <!-- DB -->
+  <!-- GAME CONTROL -->
+  <button id="btnStart">Start Game</button>
+  <button id="btnFinish">Finish Game</button>
+
+  <br><br>
+
+  <!-- ONE SHOT -->
+  <div id="oneShotArea">
+    <button id="btnFindOneShot">Find</button>
+    <pre id="oneShotResult"></pre>
+  </div>
+
+  <!-- DB (경로 중요) -->
   <script src="data/db/classic_no_num.js"></script>
   <script src="data/db/classic_yes_num.js"></script>
   <script src="data/db/platformer_no_num.js"></script>
   <script src="data/db/platformer_yes_num.js"></script>
 
-  <!-- MAIN ENTRY -->
+  <!-- MAIN (반드시 맨 아래) -->
   <script type="module" src="main.js"></script>
-
 </body>
 </html>
