@@ -7,6 +7,7 @@ let turn = "PLAYER"; // PLAYER | AI
 
 let gameDB = [];
 let allDB = [];
+
 let used = new Set();
 let history = [];
 let lastChar = null;
@@ -26,7 +27,7 @@ const optIgnoreWrap = document.getElementById("optIgnoreWrap");
 const optNoOneShot = document.getElementById("optNoOneShot");
 const optAI = document.getElementById("optAI");
 
-// game control
+// controls
 const startBtn = document.getElementById("startBtn");
 const endBtn = document.getElementById("endBtn");
 const wordInput = document.getElementById("wordInput");
@@ -41,7 +42,6 @@ const dictInput = document.getElementById("dictInput");
 const dictResult = document.getElementById("dictResult");
 const dictPrefix = document.getElementById("dictPrefix");
 const dictSuffix = document.getElementById("dictSuffix");
-
 const oneshotBtn = document.getElementById("oneshotBtn");
 const oneshotResult = document.getElementById("oneshotResult");
 
@@ -141,7 +141,7 @@ async function loadGameDB() {
 }
 
 /* =========================================================
-   CORE RULE FUNCTIONS
+   CORE LOGIC
 ========================================================= */
 
 function getNextChar(entry, opt) {
@@ -151,7 +151,7 @@ function getNextChar(entry, opt) {
   return entry.last;
 }
 
-// c로 시작하는 미사용 단어가 있는가
+// 다음 글자로 시작하는 단어가 있는가
 function hasAnyNext(c) {
   return gameDB.some(e =>
     !used.has(e.key) &&
@@ -159,7 +159,7 @@ function hasAnyNext(c) {
   );
 }
 
-// c로 시작하는 "한방이 아닌" 선택지가 있는가
+// 한방이 아닌 선택지가 있는가
 function hasNonOneShotNext(c, opt, excludeKey = null) {
   return gameDB.some(e =>
     !used.has(e.key) &&
@@ -169,14 +169,11 @@ function hasNonOneShotNext(c, opt, excludeKey = null) {
   );
 }
 
-// 이 단어가 "게임상 한방 단어"인가?
+// 이 단어는 한방 금지 룰에서 입력 불가인가?
 function isForbiddenOneShot(entry, opt) {
   const c = getNextChar(entry, opt);
 
-  // 다음 단어 자체가 없음
   if (!hasAnyNext(c)) return true;
-
-  // 다음 단어는 있으나 전부 한방
   if (!hasNonOneShotNext(c, opt, entry.key)) return true;
 
   return false;
@@ -195,26 +192,28 @@ function accept(entry, who) {
   if (who === "AI") countAI++;
 
   const opt = getOptions();
-  const countText = opt.aiMode
+  const score = opt.aiMode
     ? `(P:${countPlayer} / AI:${countAI})`
     : `(P:${countPlayer})`;
 
-  logStatus(`⭕ ${who}: ${entry.original} ${countText}`);
+  logStatus(`⭕ ${who}: ${entry.original} ${score}`);
   logHistory();
   wordInput.value = "";
 }
 
 function lose(who, reason) {
   const opt = getOptions();
-  const countText = opt.aiMode
+  const score = opt.aiMode
     ? `(P:${countPlayer} / AI:${countAI})`
     : `(P:${countPlayer})`;
 
-  logStatus(`❌ ${who} loses: ${reason} ${countText}`);
+  logStatus(`❌ ${who} loses: ${reason} ${score}`);
   state = "ENDED";
 }
 
-/* ================= PLAYER ================= */
+/* =========================================================
+   PLAYER TURN
+========================================================= */
 
 function onSubmit() {
   if (state !== "PLAYING" || turn !== "PLAYER") return;
@@ -229,7 +228,7 @@ function onSubmit() {
 
   const entry = gameDB.find(e => e.key === input);
 
-  // 2. DB 존재
+  // 2. DB
   if (!entry) return logStatus("❌ Not in DB");
 
   // 3. 중복
@@ -250,27 +249,31 @@ function onSubmit() {
   }
 }
 
-/* ================= AI ================= */
+/* =========================================================
+   AI TURN
+========================================================= */
 
 function aiTurn() {
   if (state !== "PLAYING") return;
 
   const opt = getOptions();
 
-  // 턴 시작 패배 판정
-  if (opt.noOneShot) {
-    if (!hasNonOneShotNext(lastChar, opt)) {
-      return lose("AI", "No valid move");
-    }
-  } else {
-    if (!hasAnyNext(lastChar)) {
-      return lose("AI", "No possible continuation");
+  // 🔥 첫 턴 예외 (lastChar 없음)
+  if (lastChar) {
+    if (opt.noOneShot) {
+      if (!hasNonOneShotNext(lastChar, opt)) {
+        return lose("AI", "No valid move");
+      }
+    } else {
+      if (!hasAnyNext(lastChar)) {
+        return lose("AI", "No possible continuation");
+      }
     }
   }
 
   const candidates = gameDB.filter(e =>
     !used.has(e.key) &&
-    e.first === lastChar &&
+    (!lastChar || e.first === lastChar) &&
     (!opt.noOneShot || !isForbiddenOneShot(e, opt))
   );
 
@@ -312,7 +315,7 @@ wordInput.addEventListener("keydown", e => {
 });
 
 /* =========================================================
-   DICTIONARY (PREFIX / SUFFIX)
+   DICTIONARY
 ========================================================= */
 
 dictInput.addEventListener("input", async () => {
@@ -335,10 +338,10 @@ dictInput.addEventListener("input", async () => {
 
   dictResult.textContent =
     matches.length ? matches.join("\n") : "(no matches)";
-};
+});
 
 /* =========================================================
-   ONE-SHOT DICTIONARY (PRE-GAME ONLY)
+   ONE-SHOT DICTIONARY (PRE-GAME)
 ========================================================= */
 
 oneshotBtn.onclick = async () => {
