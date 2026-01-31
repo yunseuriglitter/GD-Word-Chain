@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>GD Word Chain</title>
+
   <style>
     body {
       font-family: sans-serif;
@@ -21,7 +22,6 @@
       align-items: flex-start;
     }
 
-    /* ===== Fieldset Common ===== */
     fieldset {
       border: 2px solid #444;
       padding: 16px;
@@ -33,11 +33,23 @@
       padding: 0 8px;
     }
 
-    /* ===== Left : Options ===== */
     .left {
-      width: 260px;   /* 가로폭 줄임 */
+      width: 260px;
     }
 
+    .right {
+      flex: 1;
+      min-width: 420px;
+    }
+
+    /* ===== Disabled State ===== */
+    .disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ===== Options ===== */
     .option {
       margin: 8px 0;
     }
@@ -53,12 +65,13 @@
       font-size: 14px;
     }
 
-    /* ===== Right : Ingame ===== */
-    .right {
-      flex: 1;
-      min-width: 420px;
+    /* Start / Finish는 항상 활성 */
+    .controls button {
+      pointer-events: auto;
+      opacity: 1;
     }
 
+    /* ===== Ingame ===== */
     .section {
       margin-bottom: 16px;
     }
@@ -68,7 +81,6 @@
       margin-bottom: 6px;
     }
 
-    /* Input + Hint */
     .input-row {
       display: flex;
       gap: 8px;
@@ -103,28 +115,49 @@
 
 <div class="container">
 
-  <!-- ===== Left : Options ===== -->
+  <!-- =====================
+       Left : Options
+  ====================== -->
   <div class="left">
-    <fieldset>
+    <fieldset id="optionsArea">
       <legend>Options</legend>
 
       <div class="option">
-        <label><input type="checkbox" id="optPlatformer" checked> Platformer</label>
-      </div>
-      <div class="option">
-        <label><input type="checkbox" id="optStartEndNum" checked> Start / End Num</label>
-      </div>
-      <div class="option">
-        <label><input type="checkbox" id="optIgnoreTrailingNum"> Ignore Trailing Num</label>
-      </div>
-      <div class="option">
-        <label><input type="checkbox" id="optAllowOneShot"> Allow One-Shot Word</label>
-      </div>
-      <div class="option">
-        <label><input type="checkbox" id="optComputerMode" checked> Computer Mode</label>
+        <label>
+          <input type="checkbox" id="optPlatformer" checked>
+          Platformer
+        </label>
       </div>
 
-      <!-- Start / Finish 버튼은 옵션 아래 -->
+      <div class="option">
+        <label>
+          <input type="checkbox" id="optStartEndNum" checked>
+          Start / End Num
+        </label>
+      </div>
+
+      <div class="option">
+        <label>
+          <input type="checkbox" id="optIgnoreTrailingNum">
+          Ignore Trailing Num
+        </label>
+      </div>
+
+      <div class="option">
+        <label>
+          <input type="checkbox" id="optAllowOneShot">
+          Allow One-Shot Word
+        </label>
+      </div>
+
+      <div class="option">
+        <label>
+          <input type="checkbox" id="optComputerMode" checked>
+          Computer Mode
+        </label>
+      </div>
+
+      <!-- Start / Finish (항상 활성) -->
       <div class="controls">
         <button id="btnStart">Start Game</button>
         <button id="btnFinish">Finish Game</button>
@@ -132,9 +165,11 @@
     </fieldset>
   </div>
 
-  <!-- ===== Right : Ingame ===== -->
+  <!-- =====================
+       Right : Ingame
+  ====================== -->
   <div class="right">
-    <fieldset>
+    <fieldset id="ingameArea" class="disabled">
       <legend>Ingame</legend>
 
       <div class="section">
@@ -145,8 +180,9 @@
             id="wordInput"
             placeholder="Type a word and press Enter"
             autocomplete="off"
+            disabled
           />
-          <button id="btnHint">Hint</button>
+          <button id="btnHint" disabled>Hint</button>
         </div>
       </div>
 
