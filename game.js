@@ -1,5 +1,5 @@
 /* =========================
-   Game State
+   State Definition
 ========================= */
 
 const STATE = {
@@ -10,20 +10,22 @@ const STATE = {
 let gameState = STATE.PRE;
 
 /* =========================
-   DOM
+   DOM Elements
 ========================= */
 
 // Areas
 const optionsArea = document.getElementById("optionsArea");
-const ingameArea = document.getElementById("ingameArea");
+const ingameArea  = document.getElementById("ingameArea");
 
 // Buttons
 const btnStart  = document.getElementById("btnStart");
 const btnFinish = document.getElementById("btnFinish");
-
-// Ingame controls
-const wordInput = document.getElementById("wordInput");
 const btnHint   = document.getElementById("btnHint");
+
+// Ingame input/output
+const wordInput  = document.getElementById("wordInput");
+const statusText = document.getElementById("statusText");
+const historyText = document.getElementById("historyText");
 
 // Options
 const optPlatformer = document.getElementById("optPlatformer");
@@ -33,11 +35,10 @@ const optOneShot    = document.getElementById("optAllowOneShot");
 const optComputer   = document.getElementById("optComputerMode");
 
 /* =========================
-   DB (pregenerated json)
-   ⚠️ 이미 fetch 되어 있다고 가정
+   Databases (assumed loaded)
 ========================= */
 
-// 예시 구조 (네가 실제 fetch로 채우면 됨)
+// ⚠️ 실제로는 fetch해서 채우면 됨
 const allDB = {
   classic: {
     no:  window.CLASSIC_NO  || [],
@@ -49,11 +50,21 @@ const allDB = {
   }
 };
 
-// 현재 인게임 DB
+// Ingame DB
 let inGameDB = [];
 
 /* =========================
-   Init (Game Pre)
+   Ingame Runtime State
+========================= */
+
+let usedSet = new Set();   // lower 기준
+let history = [];          // original 기록
+let currentLast = null;    // 다음 시작 문자
+let isPlayerTurn = true;
+let options = {};
+
+/* =========================
+   Initial State
 ========================= */
 
 enterPreGame();
@@ -65,40 +76,42 @@ enterPreGame();
 function enterPreGame() {
   gameState = STATE.PRE;
 
-  // UI
+  // UI state
   optionsArea.classList.remove("disabled");
   ingameArea.classList.add("disabled");
 
   wordInput.disabled = true;
-  btnHint.disabled   = true;
+  btnHint.disabled = true;
 
-  // Buttons
   btnStart.textContent = "Start Game";
-  btnFinish.disabled  = true;
+  btnFinish.disabled = true;
 
   applyOptionConstraint();
+
+  statusText.textContent = "";
+  historyText.textContent = "";
 }
 
 function enterInGame() {
   gameState = STATE.IN;
 
-  // UI
   optionsArea.classList.add("disabled");
   ingameArea.classList.remove("disabled");
 
   wordInput.disabled = false;
-  btnHint.disabled   = false;
+  btnHint.disabled = false;
 
-  // Buttons
   btnStart.textContent = "Reset Game";
-  btnFinish.disabled  = false;
+  btnFinish.disabled = false;
+
+  wordInput.focus();
 }
 
 /* =========================
-   Option Constraint
+   Option Constraints
 ========================= */
 
-// 3번 옵션은 2번이 켜져 있을 때만 가능
+// Ignore Trailing Num은 Start / End Num이 켜져 있을 때만
 function applyOptionConstraint() {
   optIgnoreNum.disabled = !optStartEnd.checked;
 }
@@ -106,33 +119,26 @@ function applyOptionConstraint() {
 optStartEnd.addEventListener("change", applyOptionConstraint);
 
 /* =========================
-   Buttons
+   Button Handlers
 ========================= */
 
 btnStart.addEventListener("click", () => {
-  // Start든 Reset이든 동일
-  const options = readOptions();
-  inGameDB = buildInGameDB(options);
+  const opt = readOptions();
+  inGameDB = buildInGameDB(opt);
 
-  console.log("InGame DB size:", inGameDB.length);
-
+  initGame(inGameDB, opt);
   enterInGame();
-
-  // 🔽 여기부터는 네가 인게임 로직 붙이면 됨
-  // initGame(inGameDB, options);
 });
 
 btnFinish.addEventListener("click", () => {
   if (gameState === STATE.IN) {
-    // 🔽 인게임 정리 필요하면 여기서
-    // clearGame();
-
+    clearGame();
     enterPreGame();
   }
 });
 
 /* =========================
-   Options Read
+   Options Reader
 ========================= */
 
 function readOptions() {
@@ -146,27 +152,132 @@ function readOptions() {
 }
 
 /* =========================
-   Build Ingame DB
+   Ingame DB Builder
 ========================= */
 
-function buildInGameDB(options) {
+function buildInGameDB(opt) {
   const result = [];
 
-  // classic은 항상 포함
+  // classic always
   result.push(...allDB.classic.no);
-
-  if (options.useNum) {
+  if (opt.useNum) {
     result.push(...allDB.classic.yes);
   }
 
-  // platformer 옵션
-  if (options.usePlatformer) {
+  // platformer optional
+  if (opt.usePlatformer) {
     result.push(...allDB.platformer.no);
-
-    if (options.useNum) {
+    if (opt.useNum) {
       result.push(...allDB.platformer.yes);
     }
   }
 
   return result;
+}
+
+/* =========================
+   Game Init / Clear
+========================= */
+
+function initGame(db, opt) {
+  inGameDB = db;
+  options = opt;
+
+  usedSet.clear();
+  history.length = 0;
+  currentLast = null;
+  isPlayerTurn = true;
+
+  statusText.textContent = "Game Started. Enter first word.";
+  historyText.textContent = "";
+}
+
+function clearGame() {
+  usedSet.clear();
+  history.length = 0;
+  currentLast = null;
+}
+
+/* =========================
+   Input Handling
+========================= */
+
+wordInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const value = wordInput.value;
+    wordInput.value = "";
+    handlePlayerInput(value);
+  }
+});
+
+/* =========================
+   Player Input Logic
+========================= */
+
+function handlePlayerInput(raw) {
+  if (gameState !== STATE.IN) return;
+
+  const input = raw.trim();
+  if (!input) return;
+
+  const lower = input.toLowerCase();
+
+  // 1. Start char check (skip for first word)
+  if (currentLast !== null) {
+    if (lower[0] !== currentLast) {
+      setStatus(`❌ Must Start '${currentLast}'`);
+      return;
+    }
+  }
+
+  // 2. DB existence check
+  const entry = inGameDB.find(w => w.lower === lower);
+  if (!entry) {
+    setStatus("❌ Not in DB");
+    return;
+  }
+
+  // 3. Used check
+  if (usedSet.has(lower)) {
+    setStatus("❌ Already Used");
+    return;
+  }
+
+  // 4. Accept
+  acceptWord(entry, "Player");
+}
+
+/* =========================
+   Accept Word
+========================= */
+
+function acceptWord(entry, who) {
+  setStatus(`✅ ${who} : ${entry.original}`);
+
+  usedSet.add(entry.lower);
+  history.push(entry.original);
+  historyText.textContent = history.join(" → ");
+
+  currentLast = getLastChar(entry);
+
+  // Computer mode hook
+  if (options.computerMode) {
+    isPlayerTurn = !isPlayerTurn;
+    // computerTurn() ← 여기 나중에 붙이면 됨
+  }
+}
+
+/* =========================
+   Helpers
+========================= */
+
+function getLastChar(entry) {
+  if (options.ignoreTrailingNum) {
+    return entry.last_alpha;
+  }
+  return entry.last;
+}
+
+function setStatus(msg) {
+  statusText.textContent = msg;
 }
