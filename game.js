@@ -110,7 +110,6 @@ syncOptions();
    DB LOADERS
 ========================================================= */
 
-// 전체 DB (사전 전용)
 async function loadAllDB() {
   if (allDB.length) return;
 
@@ -125,7 +124,6 @@ async function loadAllDB() {
   allDB = lists.flat();
 }
 
-// 게임 DB (옵션 반영)
 async function loadGameDB() {
   const opt = getOptions();
   const files = [];
@@ -146,6 +144,7 @@ async function loadGameDB() {
    CORE RULE FUNCTIONS
 ========================================================= */
 
+// 다음 연결 문자
 function getNextChar(entry, opt) {
   if (opt.numEdge && opt.ignoreTrailing && entry.endsWithNum) {
     return entry.lastAlpha;
@@ -153,18 +152,20 @@ function getNextChar(entry, opt) {
   return entry.last;
 }
 
-function hasNextWord(char) {
+// 1차 판정: 다음 글자로 시작하는 단어가 존재하는가
+function hasAnyNext(char) {
   return gameDB.some(e =>
     !used.has(e.key) &&
     e.first === char
   );
 }
 
-function hasNonOneShot(char, opt) {
+// 2차 판정: 한방이 아닌 선택지가 존재하는가
+function hasNonOneShotNext(char, opt) {
   return gameDB.some(e =>
     !used.has(e.key) &&
     e.first === char &&
-    hasNextWord(getNextChar(e, opt))
+    hasAnyNext(getNextChar(e, opt))
   );
 }
 
@@ -208,7 +209,7 @@ function onSubmit() {
   const input = wordInput.value.toLowerCase().trim();
   if (!input) return;
 
-  // 시작 문자 검사 (DB 이전)
+  // 시작 문자 검사
   if (lastChar && input[0] !== lastChar) {
     return logStatus(`❌ Must start with '${lastChar}'`);
   }
@@ -220,11 +221,17 @@ function onSubmit() {
   const opt = getOptions();
   const nextChar = getNextChar(entry, opt);
 
-  // 한방 금지
-  if (opt.noOneShot) {
-    if (!hasNonOneShot(nextChar, opt)) {
-      return lose("Player", "One-shot word");
+  // 1차 한방: 다음 단어 자체가 없음
+  if (!hasAnyNext(nextChar)) {
+    if (opt.noOneShot) {
+      return lose("Player", "One-shot word (no continuation)");
     }
+    // 한방 허용이면 상대 패배는 다음 턴에서 처리
+  }
+
+  // 2차 한방: 선택지는 있으나 전부 한방
+  if (opt.noOneShot && !hasNonOneShotNext(nextChar, opt)) {
+    return lose("Player", "One-shot word (only one-shots)");
   }
 
   accept(entry, "Player");
@@ -242,14 +249,19 @@ function aiTurn() {
 
   const opt = getOptions();
 
+  // AI 차례 시작 시 패배 판정
+  if (!hasAnyNext(lastChar)) {
+    return lose("AI", "No possible continuation");
+  }
+
   const candidates = gameDB.filter(e =>
     !used.has(e.key) &&
     e.first === lastChar &&
-    (!opt.noOneShot || hasNonOneShot(getNextChar(e, opt), opt))
+    (!opt.noOneShot || hasNonOneShotNext(getNextChar(e, opt), opt))
   );
 
   if (candidates.length === 0) {
-    return lose("AI", "No possible continuation");
+    return lose("AI", "No valid move");
   }
 
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
@@ -312,7 +324,7 @@ dictInput.addEventListener("input", async () => {
 });
 
 /* =========================================================
-   ONE-SHOT DICTIONARY (YES_NUM PRE-CALC)
+   ONE-SHOT DICTIONARY (PRE-GAME ONLY)
 ========================================================= */
 
 oneshotBtn.onclick = async () => {
@@ -325,9 +337,7 @@ oneshotBtn.onclick = async () => {
     "data/db/platformer_yes_num.json"
   ];
 
-  const lists = await Promise.all(
-    files.map(f => fetch(f).then(r => r.json()))
-  );
+  const lists = await Promise.all(files.map(f => fetch(f).then(r => r.json())));
   const yesNumDB = lists.flat();
 
   const oneshots = yesNumDB.filter(e => {
