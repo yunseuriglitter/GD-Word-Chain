@@ -408,5 +408,45 @@
     "startsWithNum": true,
     "endsWithNum": false,
     "type": "classic"
+  },
+  {
+    "original": "2 Comme le vent",
+    "key": "2 comme le vent",
+    "first": "2",
+    "last": "t",
+    "lastAlpha": "t",
+    "startsWithNum": true,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "15 step",
+    "key": "15 step",
+    "first": "1",
+    "last": "p",
+    "lastAlpha": "p",
+    "startsWithNum": true,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Revolution 1993",
+    "key": "revolution 1993",
+    "first": "r",
+    "last": "3",
+    "lastAlpha": "n",
+    "startsWithNum": false,
+    "endsWithNum": true,
+    "type": "classic"
+  },
+  {
+    "original": "2 0",
+    "key": "2 0",
+    "first": "2",
+    "last": "0",
+    "lastAlpha": null,
+    "startsWithNum": true,
+    "endsWithNum": true,
+    "type": "classic"
   }
 ]

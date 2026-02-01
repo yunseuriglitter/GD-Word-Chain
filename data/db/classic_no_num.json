@@ -12598,5 +12598,525 @@
     "startsWithNum": false,
     "endsWithNum": false,
     "type": "classic"
+  },
+  {
+    "original": "Ashley Wave Trials",
+    "key": "ashley wave trials",
+    "first": "a",
+    "last": "s",
+    "lastAlpha": "s",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Charge",
+    "key": "charge",
+    "first": "c",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Dual Pulse",
+    "key": "dual pulse",
+    "first": "d",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Titanic Thunderstorm",
+    "key": "titanic thunderstorm",
+    "first": "t",
+    "last": "m",
+    "lastAlpha": "m",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Evil Inside",
+    "key": "evil inside",
+    "first": "e",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Technopunk",
+    "key": "technopunk",
+    "first": "t",
+    "last": "k",
+    "lastAlpha": "k",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Bloom",
+    "key": "bloom",
+    "first": "b",
+    "last": "m",
+    "lastAlpha": "m",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Carmine Cascade",
+    "key": "carmine cascade",
+    "first": "c",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "FURY TECH",
+    "key": "fury tech",
+    "first": "f",
+    "last": "h",
+    "lastAlpha": "h",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Shirakami",
+    "key": "shirakami",
+    "first": "s",
+    "last": "i",
+    "lastAlpha": "i",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Kolor Kore",
+    "key": "kolor kore",
+    "first": "k",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Perfect in Place",
+    "key": "perfect in place",
+    "first": "p",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Bordon Factory",
+    "key": "bordon factory",
+    "first": "b",
+    "last": "y",
+    "lastAlpha": "y",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Glimmer",
+    "key": "glimmer",
+    "first": "g",
+    "last": "r",
+    "lastAlpha": "r",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Im Leaving",
+    "key": "im leaving",
+    "first": "i",
+    "last": "g",
+    "lastAlpha": "g",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "x steampunk x",
+    "key": "x steampunk x",
+    "first": "x",
+    "last": "x",
+    "lastAlpha": "x",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Strabit",
+    "key": "strabit",
+    "first": "s",
+    "last": "t",
+    "lastAlpha": "t",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Vantablack",
+    "key": "vantablack",
+    "first": "v",
+    "last": "k",
+    "lastAlpha": "k",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Magic",
+    "key": "magic",
+    "first": "m",
+    "last": "c",
+    "lastAlpha": "c",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Summer Sky",
+    "key": "summer sky",
+    "first": "s",
+    "last": "y",
+    "lastAlpha": "y",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "UnveiL",
+    "key": "unveil",
+    "first": "u",
+    "last": "l",
+    "lastAlpha": "l",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Geometrical Dominato",
+    "key": "geometrical dominato",
+    "first": "g",
+    "last": "o",
+    "lastAlpha": "o",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "fire emoji",
+    "key": "fire emoji",
+    "first": "f",
+    "last": "i",
+    "lastAlpha": "i",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Nostalgia",
+    "key": "nostalgia",
+    "first": "n",
+    "last": "a",
+    "lastAlpha": "a",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "font by robtop",
+    "key": "font by robtop",
+    "first": "f",
+    "last": "p",
+    "lastAlpha": "p",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Golden Flare",
+    "key": "golden flare",
+    "first": "g",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "The Grotto",
+    "key": "the grotto",
+    "first": "t",
+    "last": "o",
+    "lastAlpha": "o",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "BLIND",
+    "key": "blind",
+    "first": "b",
+    "last": "d",
+    "lastAlpha": "d",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "MAKE ME SAD",
+    "key": "make me sad",
+    "first": "m",
+    "last": "d",
+    "lastAlpha": "d",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "AUTONOMICA",
+    "key": "autonomica",
+    "first": "a",
+    "last": "a",
+    "lastAlpha": "a",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Ari Om",
+    "key": "ari om",
+    "first": "a",
+    "last": "m",
+    "lastAlpha": "m",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "wires",
+    "key": "wires",
+    "first": "w",
+    "last": "s",
+    "lastAlpha": "s",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "DeathWheel",
+    "key": "deathwheel",
+    "first": "d",
+    "last": "l",
+    "lastAlpha": "l",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Goober Rage Stage",
+    "key": "goober rage stage",
+    "first": "g",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "The Wonder of You",
+    "key": "the wonder of you",
+    "first": "t",
+    "last": "u",
+    "lastAlpha": "u",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Zen Blast",
+    "key": "zen blast",
+    "first": "z",
+    "last": "t",
+    "lastAlpha": "t",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "The Moon",
+    "key": "the moon",
+    "first": "t",
+    "last": "n",
+    "lastAlpha": "n",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Luminosity",
+    "key": "luminosity",
+    "first": "l",
+    "last": "y",
+    "lastAlpha": "y",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Through The Gates",
+    "key": "through the gates",
+    "first": "t",
+    "last": "s",
+    "lastAlpha": "s",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Khorne",
+    "key": "khorne",
+    "first": "k",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "FAILURE",
+    "key": "failure",
+    "first": "f",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "paranoia",
+    "key": "paranoia",
+    "first": "p",
+    "last": "a",
+    "lastAlpha": "a",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Fair Morning",
+    "key": "fair morning",
+    "first": "f",
+    "last": "g",
+    "lastAlpha": "g",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Final Round",
+    "key": "final round",
+    "first": "f",
+    "last": "d",
+    "lastAlpha": "d",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Levigo",
+    "key": "levigo",
+    "first": "l",
+    "last": "o",
+    "lastAlpha": "o",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Galeforce",
+    "key": "galeforce",
+    "first": "g",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "QuantumSonic",
+    "key": "quantumsonic",
+    "first": "q",
+    "last": "c",
+    "lastAlpha": "c",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Bruno Mars",
+    "key": "bruno mars",
+    "first": "b",
+    "last": "s",
+    "lastAlpha": "s",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Death Sentence",
+    "key": "death sentence",
+    "first": "d",
+    "last": "e",
+    "lastAlpha": "e",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Based after Based",
+    "key": "based after based",
+    "first": "b",
+    "last": "d",
+    "lastAlpha": "d",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Porridge Factory",
+    "key": "porridge factory",
+    "first": "p",
+    "last": "y",
+    "lastAlpha": "y",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
+  },
+  {
+    "original": "Techno Disco",
+    "key": "techno disco",
+    "first": "t",
+    "last": "o",
+    "lastAlpha": "o",
+    "startsWithNum": false,
+    "endsWithNum": false,
+    "type": "classic"
   }
 ]
